@@ -7,6 +7,7 @@ struct FloatNoteRootView: View {
     var body: some View {
         ZStack {
             backgroundLayer
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 topBar
