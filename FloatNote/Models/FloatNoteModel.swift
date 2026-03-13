@@ -168,6 +168,27 @@ final class FloatNoteModel: ObservableObject {
         "\(currentIndex + 1) / \(notes.count)"
     }
 
+    var currentTitle: String {
+        let fallback = "FloatNote"
+        guard let body = currentNote?.body else { return fallback }
+
+        for rawLine in body.split(whereSeparator: \.isNewline) {
+            let line = rawLine
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(
+                    of: #"^(#{1,6}\s*|[-*+]\s+|>\s*|\d+\.\s+|`+)"#,
+                    with: "",
+                    options: .regularExpression
+                )
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !line.isEmpty else { continue }
+            return String(line.prefix(28))
+        }
+
+        return fallback
+    }
+
     func updateCurrentBody(_ body: String) {
         guard notes.indices.contains(currentIndex) else { return }
 
@@ -189,21 +210,25 @@ final class FloatNoteModel: ObservableObject {
 
     func goToNextNote() {
         if currentIndex == notes.count - 1 {
-            let timestamp = Date()
-            let note = NoteRecord(
-                id: UUID(),
-                body: "",
-                createdAt: timestamp,
-                updatedAt: timestamp
-            )
-            notes.append(note)
-            currentNoteID = note.id
-            requestEditorFocus()
-            persistImmediately()
+            createFreshNote()
             return
         }
 
         currentNoteID = notes[currentIndex + 1].id
+        requestEditorFocus()
+        persistImmediately()
+    }
+
+    func createFreshNote() {
+        let timestamp = Date()
+        let note = NoteRecord(
+            id: UUID(),
+            body: "",
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        notes.append(note)
+        currentNoteID = note.id
         requestEditorFocus()
         persistImmediately()
     }

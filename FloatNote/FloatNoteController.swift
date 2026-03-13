@@ -26,13 +26,20 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
         bindModel()
         installLocalMonitor()
         registerToggleHotKey()
-        showWindow()
     }
 
     func showWindow() {
         let size = model.preferences.windowSize.size
-        window.setContentSize(size)
-        window.center()
+        let screen = activeScreen()
+        let visibleFrame = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: size.width, height: size.height)
+        let origin = NSPoint(
+            x: visibleFrame.midX - size.width / 2,
+            y: visibleFrame.midY - size.height / 2
+        )
+        let frame = NSRect(origin: origin, size: size)
+
+        window.setFrame(frame, display: true)
+        window.orderFrontRegardless()
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         model.requestEditorFocus()
@@ -65,9 +72,9 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
         window.title = "FloatNote"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
-        window.standardWindowButton(.closeButton)?.isHidden = true
-        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-        window.standardWindowButton(.zoomButton)?.isHidden = true
+        window.standardWindowButton(.closeButton)?.isHidden = false
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = false
+        window.standardWindowButton(.zoomButton)?.isHidden = false
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
         window.level = .floating
@@ -109,13 +116,18 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
     }
 
     private func resizeWindow(to size: NSSize) {
-        let currentFrame = window.frame
+        let referenceFrame = window.isVisible ? window.frame : (activeScreen()?.visibleFrame ?? window.frame)
         let newOrigin = NSPoint(
-            x: currentFrame.midX - size.width / 2,
-            y: currentFrame.midY - size.height / 2
+            x: referenceFrame.midX - size.width / 2,
+            y: referenceFrame.midY - size.height / 2
         )
         let newFrame = NSRect(origin: newOrigin, size: size)
         window.setFrame(newFrame, display: true, animate: true)
+    }
+
+    private func activeScreen() -> NSScreen? {
+        let mouseLocation = NSEvent.mouseLocation
+        return NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) }) ?? window.screen ?? NSScreen.main ?? NSScreen.screens.first
     }
 
     private func installLocalMonitor() {
