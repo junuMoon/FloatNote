@@ -4,8 +4,6 @@ struct FloatNoteRootView: View {
     @ObservedObject var model: FloatNoteModel
     let onClose: () -> Void
 
-    @FocusState private var isEditorFocused: Bool
-
     var body: some View {
         ZStack {
             backgroundLayer
@@ -39,25 +37,6 @@ struct FloatNoteRootView: View {
                 )
                 .frame(width: 6)
                 .animation(.easeOut(duration: 0.18), value: model.isLeftBoundaryPulsing)
-        }
-        .onAppear {
-            focusEditorSoon()
-        }
-        .onChange(of: model.focusNonce) { _, _ in
-            focusEditorSoon()
-        }
-        .onChange(of: model.currentNote?.id) { _, _ in
-            focusEditorSoon()
-        }
-        .onChange(of: model.isSettingsPresented) { _, isPresented in
-            if !isPresented {
-                focusEditorSoon()
-            }
-        }
-        .onChange(of: model.isOnboardingPresented) { _, isPresented in
-            if !isPresented {
-                focusEditorSoon()
-            }
         }
     }
 
@@ -153,7 +132,7 @@ struct FloatNoteRootView: View {
                 HStack {
                     Text("Last viewed note")
                     Spacer()
-                    Text("raw markdown first, inline rendering later")
+                    Text("live markdown styling")
                 }
                 .font(.system(size: 12, weight: .medium, design: .rounded))
                 .tracking(1.1)
@@ -174,16 +153,13 @@ struct FloatNoteRootView: View {
                             .padding(.top, 20)
                     }
 
-                    TextEditor(
+                    MarkdownTextEditor(
                         text: Binding(
                             get: { model.currentNote?.body ?? "" },
                             set: { model.updateCurrentBody($0) }
-                        )
+                        ),
+                        focusToken: model.focusNonce
                     )
-                    .scrollContentBackground(.hidden)
-                    .focused($isEditorFocused)
-                    .font(.system(size: 20, weight: .regular, design: .serif))
-                    .foregroundStyle(Color.floatInk)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 14)
                 }
@@ -451,12 +427,6 @@ struct FloatNoteRootView: View {
     private func formatted(date: Date?) -> String {
         guard let date else { return "-" }
         return Self.dateFormatter.string(from: date)
-    }
-
-    private func focusEditorSoon() {
-        DispatchQueue.main.async {
-            isEditorFocused = true
-        }
     }
 
     private static let dateFormatter: DateFormatter = {

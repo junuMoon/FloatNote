@@ -36,6 +36,7 @@ xcodebuild -project FloatNote.xcodeproj -scheme FloatNote -configuration Debug b
 - 플로팅 macOS 윈도우
 - 기본 전역 핫키 `Control + A`
 - 이전 / 다음 기본 단축키 `Control + Shift + Left/Right`
+- 헤더, 리스트, 인용, 강조, 링크, 코드블록 기준의 실시간 마크다운 스타일링
 - 마지막으로 본 노트 복귀
 - 생성 순서 기준 좌우 이동
 - 마지막 노트 오른쪽에서 새 노트 생성

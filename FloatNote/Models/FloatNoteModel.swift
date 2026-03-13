@@ -17,9 +17,11 @@ struct NoteRecord: Codable, Equatable, Identifiable {
                 body: [
                     "# FloatNote principles",
                     "",
-                    "- 작업 위에 잠깐 뜨는 레이어",
+                    "> 작업 위에 잠깐 뜨는 레이어",
+                    "",
                     "- 마지막으로 본 노트부터 이어쓰기",
-                    "- Created / Updated 는 하단 고정",
+                    "- `Created / Updated` 는 하단 고정",
+                    "- **Markdown** 이 입력 중에도 바로 살아난다",
                 ].joined(separator: "\n"),
                 createdAt: now.addingTimeInterval(-36 * 60 * 60),
                 updatedAt: now.addingTimeInterval(-30 * 60 * 60)
@@ -32,6 +34,12 @@ struct NoteRecord: Codable, Equatable, Identifiable {
                     "- SwiftUI + AppKit",
                     "- global toggle hotkey",
                     "- floating macOS window",
+                    "- [project.yml](FloatNote.xcodeproj)",
+                    "",
+                    "```swift",
+                    "let mode = \"native\"",
+                    "print(mode)",
+                    "```",
                 ].joined(separator: "\n"),
                 createdAt: now.addingTimeInterval(-24 * 60 * 60),
                 updatedAt: now.addingTimeInterval(-16 * 60 * 60)
@@ -44,6 +52,7 @@ struct NoteRecord: Codable, Equatable, Identifiable {
                     "- Glacier 같은 구조로 프로젝트 정리",
                     "- floating window shell 구현",
                     "- next note creates a fresh note",
+                    "- *inline markdown styling* 추가",
                 ].joined(separator: "\n"),
                 createdAt: now.addingTimeInterval(-6 * 60 * 60),
                 updatedAt: now.addingTimeInterval(-1 * 60 * 60)

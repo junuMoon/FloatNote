@@ -36,6 +36,7 @@ xcodebuild -project FloatNote.xcodeproj -scheme FloatNote -configuration Debug b
 - floating macOS window
 - global toggle hotkey with default `Control + A`
 - local older / newer shortcuts with default `Control + Shift + Left/Right`
+- live markdown styling for headings, lists, quotes, emphasis, links, and fenced code
 - last viewed note restore
 - note navigation in creation order
 - new note creation from the right edge

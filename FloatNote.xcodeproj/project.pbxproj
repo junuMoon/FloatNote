@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		092CFD29BC922A1702D7B44B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 255D9C28BE9AF65B73FF4092 /* Assets.xcassets */; };
+		308780E3D2B7A997B67D6468 /* MarkdownTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9CB050724AA079990DAC508 /* MarkdownTextEditor.swift */; };
 		4F5E19AB9360B3BCCEDA5672 /* StatePersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6DABF3F85E62FA86D96DD1 /* StatePersistence.swift */; };
 		682A6EF04D3B028E0E565232 /* KeyShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB7D1470989B4580D8C9101 /* KeyShortcut.swift */; };
 		9B2662137D180322443988B3 /* FloatNoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B94A3400405C77248171AAD /* FloatNoteApp.swift */; };
@@ -26,6 +27,7 @@
 		53D15712CC2D5AB6BAEB045F /* FloatNoteController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatNoteController.swift; sourceTree = "<group>"; };
 		5939312482C75DB371BE98A5 /* FloatNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FloatNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3A9F9513672740D269E45B6 /* FloatNoteModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatNoteModel.swift; sourceTree = "<group>"; };
+		C9CB050724AA079990DAC508 /* MarkdownTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTextEditor.swift; sourceTree = "<group>"; };
 		D50D005DD9200333C83A33E8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		FD57518FE685E9B51DB679A1 /* HotKeyMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyMonitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -74,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				2DB285A91FB01578CACCC278 /* FloatNoteRootView.swift */,
+				C9CB050724AA079990DAC508 /* MarkdownTextEditor.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -166,6 +169,7 @@
 				B2ADA78B0BB0DBEE1EA8D523 /* FloatNoteRootView.swift in Sources */,
 				B93990DC1FABEEC9AFDF2C35 /* HotKeyMonitor.swift in Sources */,
 				682A6EF04D3B028E0E565232 /* KeyShortcut.swift in Sources */,
+				308780E3D2B7A997B67D6468 /* MarkdownTextEditor.swift in Sources */,
 				4F5E19AB9360B3BCCEDA5672 /* StatePersistence.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
