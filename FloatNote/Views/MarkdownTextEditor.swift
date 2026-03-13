@@ -25,6 +25,8 @@ struct MarkdownTextEditor: NSViewRepresentable {
         textView.insertionPointColor = MarkdownTheme.ink
         textView.textColor = MarkdownTheme.ink
         textView.font = MarkdownTheme.bodyFont
+        textView.typingAttributes = MarkdownStyler.typingAttributes()
+        textView.defaultParagraphStyle = MarkdownStyler.typingParagraphStyle()
         textView.isEditable = true
         textView.isSelectable = true
         textView.isRichText = false
@@ -148,7 +150,7 @@ private enum MarkdownStyler {
 
         guard fullRange.length > 0 else {
             storage.endEditing()
-            textView.typingAttributes = baseAttributes()
+            textView.typingAttributes = typingAttributes()
             textView.selectedRanges = selection
             return
         }
@@ -157,8 +159,16 @@ private enum MarkdownStyler {
         applyInlineStyles(to: storage, text: string, excludedRanges: fencedRanges)
 
         storage.endEditing()
-        textView.typingAttributes = baseAttributes()
+        textView.typingAttributes = typingAttributes()
         textView.selectedRanges = selection
+    }
+
+    static func typingAttributes() -> [NSAttributedString.Key: Any] {
+        [
+            .font: MarkdownTheme.bodyFont,
+            .foregroundColor: MarkdownTheme.ink,
+            .paragraphStyle: typingParagraphStyle()
+        ]
     }
 
     private static func applyBlockLevelStyles(
@@ -398,6 +408,14 @@ private enum MarkdownStyler {
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineSpacing = 7
         paragraph.paragraphSpacing = 8
+        paragraph.paragraphSpacingBefore = 0
+        return paragraph
+    }
+
+    static func typingParagraphStyle() -> NSMutableParagraphStyle {
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineSpacing = 0
+        paragraph.paragraphSpacing = 0
         paragraph.paragraphSpacingBefore = 0
         return paragraph
     }
