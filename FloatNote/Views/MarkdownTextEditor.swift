@@ -421,36 +421,29 @@ private enum MarkdownTheme {
     static let codeInk = NSColor(red: 0.17, green: 0.16, blue: 0.15, alpha: 1)
     static let codeBackground = NSColor(red: 0.93, green: 0.90, blue: 0.84, alpha: 0.95)
 
-    static let bodyFont = serifFont(size: 20)
-    static let strongFont = serifFont(size: 20, weight: .semibold)
-    static let emphasisFont = italicSerifFont(size: 20)
-    static let codeFont = NSFont.monospacedSystemFont(ofSize: 17, weight: .regular)
-    static let smallCapsFont = NSFont.systemFont(ofSize: 14, weight: .medium)
+    static let bodyFont = textFont(size: 19)
+    static let strongFont = textFont(size: 19, weight: .semibold)
+    static let emphasisFont = italicTextFont(size: 19)
+    static let codeFont = NSFont.monospacedSystemFont(ofSize: 15.5, weight: .regular)
+    static let smallCapsFont = NSFont.systemFont(ofSize: 13, weight: .medium)
 
     static func headingFont(level: Int) -> NSFont {
         switch level {
-        case 1: serifFont(size: 31, weight: .bold)
-        case 2: serifFont(size: 28, weight: .bold)
-        case 3: serifFont(size: 24, weight: .semibold)
-        case 4: serifFont(size: 21, weight: .semibold)
-        case 5: serifFont(size: 19, weight: .medium)
-        default: serifFont(size: 18, weight: .medium)
+        case 1: textFont(size: 30, weight: .bold)
+        case 2: textFont(size: 26, weight: .bold)
+        case 3: textFont(size: 23, weight: .semibold)
+        case 4: textFont(size: 20, weight: .semibold)
+        case 5: textFont(size: 18, weight: .medium)
+        default: textFont(size: 17, weight: .medium)
         }
     }
 
-    static func serifFont(size: CGFloat, weight: NSFont.Weight = .regular) -> NSFont {
-        let base = NSFont.systemFont(ofSize: size, weight: weight)
-
-        if let descriptor = base.fontDescriptor.withDesign(.serif),
-           let font = NSFont(descriptor: descriptor, size: size) {
-            return font
-        }
-
-        return base
+    static func textFont(size: CGFloat, weight: NSFont.Weight = .regular) -> NSFont {
+        NSFont.systemFont(ofSize: size, weight: weight)
     }
 
-    static func italicSerifFont(size: CGFloat) -> NSFont {
-        let base = serifFont(size: size)
+    static func italicTextFont(size: CGFloat) -> NSFont {
+        let base = textFont(size: size)
         let italic = NSFontManager.shared.convert(base, toHaveTrait: .italicFontMask)
         return italic.pointSize == 0 ? base : italic
     }

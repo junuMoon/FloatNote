@@ -52,8 +52,8 @@ struct FloatNoteRootView: View {
     private var topBar: some View {
         ZStack {
             Text(model.currentTitle)
-                .font(.system(size: 13, weight: .medium, design: .rounded))
-                .tracking(1.2)
+                .font(.system(size: 12.5, weight: .medium))
+                .tracking(0.4)
                 .foregroundStyle(Color.floatMuted)
                 .lineLimit(1)
                 .padding(.horizontal, 120)
@@ -70,7 +70,7 @@ struct FloatNoteRootView: View {
                     }
 
                     Text(model.positionLabel)
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Color.floatMuted)
                         .frame(minWidth: 46)
 
@@ -108,7 +108,7 @@ struct FloatNoteRootView: View {
                 ZStack(alignment: .topLeading) {
                     if let note = model.currentNote, note.body.isEmpty {
                         Text("제목 없이 바로 입력 시작")
-                            .font(.system(size: 22, weight: .regular, design: .serif))
+                            .font(.system(size: 18, weight: .regular))
                             .foregroundStyle(Color.floatMuted.opacity(0.78))
                             .padding(.leading, 4)
                             .padding(.top, 14)
@@ -149,7 +149,7 @@ struct FloatNoteRootView: View {
         overlayCard(width: 250) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("첫 시작")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.floatMuted)
                     .textCase(.uppercase)
 
@@ -158,7 +158,7 @@ struct FloatNoteRootView: View {
                     Text("바로 입력")
                     Text("앞뒤 노트 이동")
                 }
-                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color.floatInk)
 
                 Button("확인") {
@@ -175,7 +175,7 @@ struct FloatNoteRootView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Text("Shortcuts")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Color.floatInk)
 
                     Spacer()
@@ -215,7 +215,7 @@ struct FloatNoteRootView: View {
 
                 VStack(alignment: .leading, spacing: 9) {
                     Text("Window")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(Color.floatMuted)
                         .textCase(.uppercase)
 
@@ -241,7 +241,7 @@ struct FloatNoteRootView: View {
 
             Text("Updated \(formatted(date: model.currentNote?.updatedAt))")
         }
-        .font(.system(size: 10, weight: .medium, design: .rounded))
+        .font(.system(size: 10.5, weight: .regular))
         .foregroundStyle(Color.floatMeta)
         .padding(.horizontal, 28)
         .padding(.bottom, 14)
@@ -291,12 +291,12 @@ struct FloatNoteRootView: View {
     ) -> some View {
         HStack(spacing: 10) {
             Text(title)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(Color.floatMuted)
                 .frame(width: 54, alignment: .leading)
 
             Text(value)
-                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .font(.system(size: 13, weight: .regular))
                 .foregroundStyle(Color.floatInk)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
@@ -360,7 +360,7 @@ private struct InlineActionButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .font(.system(size: 12, weight: .medium))
             .foregroundStyle(active ? Color.white : Color.floatInk)
             .padding(.horizontal, 10)
             .padding(.vertical, 9)
@@ -379,7 +379,7 @@ private struct InlineActionButtonStyle: ButtonStyle {
 private struct PopoverActionButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .font(.system(size: 12, weight: .medium))
             .foregroundStyle(Color.floatInk)
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
