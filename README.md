@@ -1,23 +1,50 @@
 # FloatNote
 
-FloatNote is a floating desktop note app built with Tauri, React, and TypeScript.
+FloatNote is now a native macOS app built with Swift, SwiftUI, and AppKit.
 
-The current implementation covers the first usable MVP shell:
+The repository keeps the product and UX documents at the root, and the app itself follows the same layout style as `Glacier`:
 
-- resume into the last viewed note
-- edit markdown in a single body field
-- move left and right in creation order
-- create a new note from the right edge
-- keep `Created` / `Updated` visible at the bottom
-- expose onboarding and settings as lightweight overlays
+- `project.yml` at the root
+- `FloatNote/` for app source
+- `FloatNote.xcodeproj` generated from XcodeGen
+- `FloatNote.entitlements` at the root
 
-## Scripts
+## Run
 
-- `npm run dev`: browser preview
-- `npm run build`: type-check and build the frontend
-- `npm run tauri dev`: desktop shell
+Open the project directly:
 
-## Project Docs
+```bash
+cd /Users/fran/Workspace/FloatNote
+open FloatNote.xcodeproj
+```
+
+Regenerate the Xcode project only if you change `project.yml`:
+
+```bash
+cd /Users/fran/Workspace/FloatNote
+xcodegen generate
+```
+
+Build from the command line:
+
+```bash
+xcodebuild -project FloatNote.xcodeproj -scheme FloatNote -configuration Debug build
+```
+
+## Current Native MVP
+
+- floating macOS window
+- global toggle hotkey with default `Control + A`
+- local older / newer shortcuts with default `Control + Shift + Left/Right`
+- last viewed note restore
+- note navigation in creation order
+- new note creation from the right edge
+- footer `Created` / `Updated`
+- onboarding overlay
+- settings overlay with shortcut capture and window size
+- local JSON persistence in Application Support
+
+## Docs
 
 - [PRODUCT_PLAN.md](/Users/fran/Workspace/FloatNote/PRODUCT_PLAN.md)
 - [UX_FLOW.md](/Users/fran/Workspace/FloatNote/UX_FLOW.md)

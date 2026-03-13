@@ -1,0 +1,24 @@
+name: FloatNote
+options:
+  bundleIdPrefix: com.fran
+  deploymentTarget:
+    macOS: "15.0"
+  xcodeVersion: "16.0"
+  minimumXcodeGenVersion: "2.38.0"
+targets:
+  FloatNote:
+    type: application
+    platform: macOS
+    sources: [FloatNote]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.floatnote.app
+        INFOPLIST_FILE: FloatNote/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: FloatNote.entitlements
+        SWIFT_VERSION: "6.0"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
+        GENERATE_INFOPLIST_FILE: false
+        CODE_SIGN_IDENTITY: "-"
+        PRODUCT_NAME: FloatNote
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
