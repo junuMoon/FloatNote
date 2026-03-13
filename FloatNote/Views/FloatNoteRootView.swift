@@ -104,32 +104,28 @@ struct FloatNoteRootView: View {
 
     private var documentSurface: some View {
         ZStack(alignment: .topLeading) {
-            HStack(alignment: .top, spacing: 0) {
-                ZStack(alignment: .topLeading) {
-                    if model.shouldShowPlaceholder {
-                        Text("제목 없이 바로 입력 시작")
-                            .font(.system(size: max(16, model.editorFontSize + 4), weight: .regular))
-                            .foregroundStyle(Color.floatMuted.opacity(0.78))
-                            .padding(.leading, 4)
-                            .padding(.top, 8)
-                    }
-
-                    MarkdownTextEditor(
-                        text: Binding(
-                            get: { model.currentNote.body },
-                            set: { model.updateCurrentBody($0) }
-                        ),
-                        fontSize: model.editorFontSize,
-                        focusToken: model.focusNonce,
-                        onFocusChange: { isFocused in
-                            model.setEditorFocused(isFocused)
-                        }
-                    )
+            ZStack(alignment: .topLeading) {
+                if model.shouldShowPlaceholder {
+                    Text("제목 없이 바로 입력 시작")
+                        .font(.system(size: max(16, model.editorFontSize + 4), weight: .regular))
+                        .foregroundStyle(Color.floatMuted.opacity(0.78))
+                        .padding(.leading, 4)
+                        .padding(.top, 8)
                 }
-                .frame(maxWidth: 620, maxHeight: .infinity, alignment: .topLeading)
 
-                Spacer(minLength: 0)
+                MarkdownTextEditor(
+                    text: Binding(
+                        get: { model.currentNote.body },
+                        set: { model.updateCurrentBody($0) }
+                    ),
+                    fontSize: model.editorFontSize,
+                    focusToken: model.focusNonce,
+                    onFocusChange: { isFocused in
+                        model.setEditorFocused(isFocused)
+                    }
+                )
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(.horizontal, FloatNoteChromeMetrics.documentHorizontalInset)
             .padding(.top, FloatNoteChromeMetrics.documentTopInset)
             .padding(.bottom, 14)
