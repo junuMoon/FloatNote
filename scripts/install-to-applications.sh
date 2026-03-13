@@ -45,6 +45,7 @@ fi
 DEST_APP="${DEST_DIR}/${APP_NAME}"
 rm -rf "${DEST_APP}"
 /usr/bin/ditto "${SOURCE_APP}" "${DEST_APP}"
+/usr/bin/codesign --force --deep --sign - "${DEST_APP}" >/dev/null 2>&1 || true
 
 if [ -x "${LSREGISTER}" ]; then
   "${LSREGISTER}" -f "${DEST_APP}" >/dev/null 2>&1 || true
