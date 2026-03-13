@@ -421,20 +421,20 @@ private enum MarkdownTheme {
     static let codeInk = NSColor(red: 0.17, green: 0.16, blue: 0.15, alpha: 1)
     static let codeBackground = NSColor(red: 0.93, green: 0.90, blue: 0.84, alpha: 0.95)
 
-    static let bodyFont = textFont(size: 19)
-    static let strongFont = textFont(size: 19, weight: .semibold)
-    static let emphasisFont = italicTextFont(size: 19)
-    static let codeFont = NSFont.monospacedSystemFont(ofSize: 15.5, weight: .regular)
+    static let bodyFont = textFont(size: 12)
+    static let strongFont = textFont(size: 12, weight: .semibold)
+    static let emphasisFont = italicTextFont(size: 12)
+    static let codeFont = NSFont.monospacedSystemFont(ofSize: 11.5, weight: .regular)
     static let smallCapsFont = NSFont.systemFont(ofSize: 13, weight: .medium)
 
     static func headingFont(level: Int) -> NSFont {
         switch level {
-        case 1: textFont(size: 30, weight: .bold)
-        case 2: textFont(size: 26, weight: .bold)
-        case 3: textFont(size: 23, weight: .semibold)
-        case 4: textFont(size: 20, weight: .semibold)
-        case 5: textFont(size: 18, weight: .medium)
-        default: textFont(size: 17, weight: .medium)
+        case 1: textFont(size: 20, weight: .bold)
+        case 2: textFont(size: 17, weight: .bold)
+        case 3: textFont(size: 15, weight: .semibold)
+        case 4: textFont(size: 13.5, weight: .semibold)
+        case 5: textFont(size: 12.5, weight: .medium)
+        default: textFont(size: 12, weight: .medium)
         }
     }
 
