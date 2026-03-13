@@ -4,14 +4,14 @@ import SwiftUI
 
 enum FloatNoteChromeMetrics {
     static let cornerRadius: CGFloat = 28
-    static let topBarHeight: CGFloat = 38
+    static let topBarHeight: CGFloat = 32
     static let trafficLightLeadingInset: CGFloat = 18
     static let trafficLightSpacing: CGFloat = 6
     static let horizontalInset: CGFloat = 24
     static let leadingReservation: CGFloat = 92
     static let trailingToolbarInset: CGFloat = 22
     static let documentHorizontalInset: CGFloat = 28
-    static let documentTopInset: CGFloat = 8
+    static let documentTopInset: CGFloat = 2
     static let footerHorizontalInset: CGFloat = 28
 }
 

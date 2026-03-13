@@ -58,7 +58,6 @@ struct FloatNoteRootView: View {
                 .lineLimit(1)
                 .padding(.leading, FloatNoteChromeMetrics.leadingReservation + 10)
                 .padding(.trailing, 150)
-                .padding(.top, 1)
 
             HStack(spacing: 0) {
                 Color.clear
@@ -113,7 +112,7 @@ struct FloatNoteRootView: View {
                             .font(.system(size: 18, weight: .regular))
                             .foregroundStyle(Color.floatMuted.opacity(0.78))
                             .padding(.leading, 4)
-                            .padding(.top, 14)
+                            .padding(.top, 8)
                     }
 
                     MarkdownTextEditor(
