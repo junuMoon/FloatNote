@@ -4,11 +4,12 @@ import SwiftUI
 @MainActor
 struct MarkdownTextEditor: NSViewRepresentable {
     @Binding var text: String
+    let fontSize: CGFloat
     let focusToken: UUID
     let onFocusChange: (Bool) -> Void
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, onFocusChange: onFocusChange)
+        Coordinator(text: $text, fontSize: fontSize, onFocusChange: onFocusChange)
     }
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -25,9 +26,9 @@ struct MarkdownTextEditor: NSViewRepresentable {
         textView.backgroundColor = .clear
         textView.insertionPointColor = MarkdownTheme.ink
         textView.textColor = MarkdownTheme.ink
-        textView.font = MarkdownTheme.bodyFont
-        textView.typingAttributes = MarkdownStyler.typingAttributes()
-        textView.defaultParagraphStyle = MarkdownStyler.typingParagraphStyle()
+        textView.font = MarkdownTheme.bodyFont(size: fontSize)
+        textView.typingAttributes = MarkdownStyler.typingAttributes(baseFontSize: fontSize)
+        textView.defaultParagraphStyle = MarkdownStyler.typingParagraphStyle(baseFontSize: fontSize)
         textView.isEditable = true
         textView.isSelectable = true
         textView.isRichText = false
@@ -60,6 +61,7 @@ struct MarkdownTextEditor: NSViewRepresentable {
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         context.coordinator.onFocusChange = onFocusChange
+        context.coordinator.fontSize = fontSize
         context.coordinator.render(text: text)
         context.coordinator.focusIfNeeded(using: focusToken)
     }
@@ -67,13 +69,15 @@ struct MarkdownTextEditor: NSViewRepresentable {
     @MainActor
     final class Coordinator: NSObject, NSTextViewDelegate {
         @Binding private var text: String
+        var fontSize: CGFloat
         private weak var textView: NSTextView?
         var onFocusChange: (Bool) -> Void
         private var isApplyingProgrammaticChange = false
         private var lastFocusToken: UUID?
 
-        init(text: Binding<String>, onFocusChange: @escaping (Bool) -> Void) {
+        init(text: Binding<String>, fontSize: CGFloat, onFocusChange: @escaping (Bool) -> Void) {
             _text = text
+            self.fontSize = fontSize
             self.onFocusChange = onFocusChange
         }
 
@@ -98,7 +102,9 @@ struct MarkdownTextEditor: NSViewRepresentable {
                 }
             }
 
-            MarkdownStyler.apply(to: textView)
+            textView.font = MarkdownTheme.bodyFont(size: fontSize)
+            textView.defaultParagraphStyle = MarkdownStyler.typingParagraphStyle(baseFontSize: fontSize)
+            MarkdownStyler.apply(to: textView, baseFontSize: fontSize)
         }
 
         func focusIfNeeded(using token: UUID) {
@@ -121,13 +127,13 @@ struct MarkdownTextEditor: NSViewRepresentable {
                 return
             }
 
-            MarkdownStyler.apply(to: textView)
+            MarkdownStyler.apply(to: textView, baseFontSize: fontSize)
         }
 
         func textDidEndEditing(_ notification: Notification) {
             guard let textView, !isApplyingProgrammaticChange else { return }
             text = textView.string
-            MarkdownStyler.apply(to: textView)
+            MarkdownStyler.apply(to: textView, baseFontSize: fontSize)
         }
 
         func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
@@ -224,7 +230,7 @@ private enum MarkdownStyler {
     private static let italicRegex = try! NSRegularExpression(pattern: #"(?<!\*)\*([^\*\n][^*\n]*?)\*(?!\*)"#)
     private static let linkRegex = try! NSRegularExpression(pattern: #"\[([^\]]+)\]\(([^)\s]+)\)"#)
 
-    static func apply(to textView: NSTextView) {
+    static func apply(to textView: NSTextView, baseFontSize: CGFloat) {
         guard let storage = textView.textStorage else { return }
 
         let selection = textView.selectedRanges
@@ -233,35 +239,46 @@ private enum MarkdownStyler {
         let fullRange = NSRange(location: 0, length: nsString.length)
 
         storage.beginEditing()
-        storage.setAttributes(baseAttributes(), range: fullRange)
+        storage.setAttributes(baseAttributes(baseFontSize: baseFontSize), range: fullRange)
 
         guard fullRange.length > 0 else {
             storage.endEditing()
-            textView.typingAttributes = typingAttributes()
+            textView.typingAttributes = typingAttributes(baseFontSize: baseFontSize)
             textView.selectedRanges = selection
             return
         }
 
-        let fencedRanges = applyBlockLevelStyles(to: storage, text: string, nsString: nsString)
-        applyInlineStyles(to: storage, text: string, excludedRanges: fencedRanges)
+        let fencedRanges = applyBlockLevelStyles(
+            to: storage,
+            text: string,
+            nsString: nsString,
+            baseFontSize: baseFontSize
+        )
+        applyInlineStyles(
+            to: storage,
+            text: string,
+            excludedRanges: fencedRanges,
+            baseFontSize: baseFontSize
+        )
 
         storage.endEditing()
-        textView.typingAttributes = typingAttributes()
+        textView.typingAttributes = typingAttributes(baseFontSize: baseFontSize)
         textView.selectedRanges = selection
     }
 
-    static func typingAttributes() -> [NSAttributedString.Key: Any] {
+    static func typingAttributes(baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         [
-            .font: MarkdownTheme.bodyFont,
+            .font: MarkdownTheme.bodyFont(size: baseFontSize),
             .foregroundColor: MarkdownTheme.ink,
-            .paragraphStyle: typingParagraphStyle()
+            .paragraphStyle: typingParagraphStyle(baseFontSize: baseFontSize)
         ]
     }
 
     private static func applyBlockLevelStyles(
         to storage: NSTextStorage,
         text: String,
-        nsString: NSString
+        nsString: NSString,
+        baseFontSize: CGFloat
     ) -> [NSRange] {
         let fullRange = NSRange(location: 0, length: nsString.length)
         var fencedRanges: [NSRange] = []
@@ -284,12 +301,12 @@ private enum MarkdownStyler {
                     openFenceStart = lineRange.location
                 }
 
-                storage.addAttributes(codeBlockAttributes(level: .fence), range: lineRange)
+                storage.addAttributes(codeBlockAttributes(level: .fence, baseFontSize: baseFontSize), range: lineRange)
                 continue
             }
 
             if openFenceStart != nil {
-                storage.addAttributes(codeBlockAttributes(level: .body), range: lineRange)
+                storage.addAttributes(codeBlockAttributes(level: .body, baseFontSize: baseFontSize), range: lineRange)
                 continue
             }
         }
@@ -304,35 +321,35 @@ private enum MarkdownStyler {
             let bodyRange = match.range(at: 4)
             let level = max(1, min(6, markerRange.length))
 
-            storage.addAttributes(headingAttributes(level: level), range: match.range)
+            storage.addAttributes(headingAttributes(level: level, baseFontSize: baseFontSize), range: match.range)
             storage.addAttributes(markerAttributes(), range: markerRange)
-            storage.addAttributes(headingBodyAttributes(level: level), range: bodyRange)
+            storage.addAttributes(headingBodyAttributes(level: level, baseFontSize: baseFontSize), range: bodyRange)
         }
 
         for match in bulletRegex.matches(in: text, range: fullRange) {
             guard !range(match.range, intersectsAnyOf: fencedRanges) else { continue }
 
-            storage.addAttributes(listAttributes(indent: 26), range: match.range)
+            storage.addAttributes(listAttributes(indent: 24, baseFontSize: baseFontSize), range: match.range)
             storage.addAttributes(markerAttributes(), range: match.range(at: 2))
         }
 
         for match in numberedListRegex.matches(in: text, range: fullRange) {
             guard !range(match.range, intersectsAnyOf: fencedRanges) else { continue }
 
-            storage.addAttributes(listAttributes(indent: 30), range: match.range)
+            storage.addAttributes(listAttributes(indent: 28, baseFontSize: baseFontSize), range: match.range)
             storage.addAttributes(markerAttributes(), range: match.range(at: 2))
         }
 
         for match in quoteRegex.matches(in: text, range: fullRange) {
             guard !range(match.range, intersectsAnyOf: fencedRanges) else { continue }
 
-            storage.addAttributes(quoteAttributes(), range: match.range)
+            storage.addAttributes(quoteAttributes(baseFontSize: baseFontSize), range: match.range)
             storage.addAttributes(markerAttributes(), range: match.range(at: 2))
         }
 
         for match in ruleRegex.matches(in: text, range: fullRange) {
             guard !range(match.range, intersectsAnyOf: fencedRanges) else { continue }
-            storage.addAttributes(ruleAttributes(), range: match.range)
+            storage.addAttributes(ruleAttributes(baseFontSize: baseFontSize), range: match.range)
         }
 
         return fencedRanges
@@ -341,13 +358,14 @@ private enum MarkdownStyler {
     private static func applyInlineStyles(
         to storage: NSTextStorage,
         text: String,
-        excludedRanges: [NSRange]
+        excludedRanges: [NSRange],
+        baseFontSize: CGFloat
     ) {
         let fullRange = NSRange(location: 0, length: (text as NSString).length)
 
         for match in inlineCodeRegex.matches(in: text, range: fullRange) {
             guard !range(match.range, intersectsAnyOf: excludedRanges) else { continue }
-            storage.addAttributes(codeSpanAttributes(), range: match.range)
+            storage.addAttributes(codeSpanAttributes(baseFontSize: baseFontSize), range: match.range)
         }
 
         for match in boldRegex.matches(in: text, range: fullRange) {
@@ -358,7 +376,7 @@ private enum MarkdownStyler {
                 markerAttributes(),
                 range: NSRange(location: NSMaxRange(match.range) - 2, length: 2)
             )
-            storage.addAttributes(strongAttributes(), range: match.range(at: 1))
+            storage.addAttributes(strongAttributes(baseFontSize: baseFontSize), range: match.range(at: 1))
         }
 
         for match in italicRegex.matches(in: text, range: fullRange) {
@@ -368,7 +386,7 @@ private enum MarkdownStyler {
                 markerAttributes(),
                 range: NSRange(location: NSMaxRange(match.range) - 1, length: 1)
             )
-            storage.addAttributes(emphasisAttributes(), range: match.range(at: 1))
+            storage.addAttributes(emphasisAttributes(baseFontSize: baseFontSize), range: match.range(at: 1))
         }
 
         for match in linkRegex.matches(in: text, range: fullRange) {
@@ -384,36 +402,36 @@ private enum MarkdownStyler {
         }
     }
 
-    private static func baseAttributes() -> [NSAttributedString.Key: Any] {
+    private static func baseAttributes(baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         [
-            .font: MarkdownTheme.bodyFont,
+            .font: MarkdownTheme.bodyFont(size: baseFontSize),
             .foregroundColor: MarkdownTheme.ink,
-            .paragraphStyle: baseParagraphStyle()
+            .paragraphStyle: baseParagraphStyle(baseFontSize: baseFontSize)
         ]
     }
 
-    private static func headingAttributes(level: Int) -> [NSAttributedString.Key: Any] {
+    private static func headingAttributes(level: Int, baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = 6
-        paragraph.paragraphSpacing = 12
-        paragraph.paragraphSpacingBefore = level == 1 ? 8 : 4
+        paragraph.lineSpacing = lineSpacing(for: baseFontSize) + 0.5
+        paragraph.paragraphSpacing = paragraphSpacing(for: baseFontSize) + 2
+        paragraph.paragraphSpacingBefore = level == 1 ? 5 : 3
 
         return [
-            .font: MarkdownTheme.headingFont(level: level),
+            .font: MarkdownTheme.headingFont(level: level, baseFontSize: baseFontSize),
             .foregroundColor: MarkdownTheme.ink,
             .paragraphStyle: paragraph
         ]
     }
 
-    private static func headingBodyAttributes(level: Int) -> [NSAttributedString.Key: Any] {
+    private static func headingBodyAttributes(level: Int, baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         [
-            .font: MarkdownTheme.headingFont(level: level),
+            .font: MarkdownTheme.headingFont(level: level, baseFontSize: baseFontSize),
             .foregroundColor: MarkdownTheme.ink
         ]
     }
 
-    private static func listAttributes(indent: CGFloat) -> [NSAttributedString.Key: Any] {
-        let paragraph = baseParagraphStyle()
+    private static func listAttributes(indent: CGFloat, baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
+        let paragraph = baseParagraphStyle(baseFontSize: baseFontSize)
         paragraph.headIndent = indent
         paragraph.firstLineHeadIndent = 0
 
@@ -422,8 +440,8 @@ private enum MarkdownStyler {
         ]
     }
 
-    private static func quoteAttributes() -> [NSAttributedString.Key: Any] {
-        let paragraph = baseParagraphStyle()
+    private static func quoteAttributes(baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
+        let paragraph = baseParagraphStyle(baseFontSize: baseFontSize)
         paragraph.headIndent = 18
         paragraph.firstLineHeadIndent = 0
 
@@ -433,47 +451,47 @@ private enum MarkdownStyler {
         ]
     }
 
-    private static func ruleAttributes() -> [NSAttributedString.Key: Any] {
+    private static func ruleAttributes(baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         [
             .foregroundColor: MarkdownTheme.muted.withAlphaComponent(0.55),
-            .font: MarkdownTheme.smallCapsFont
+            .font: MarkdownTheme.smallCapsFont(size: max(11, baseFontSize))
         ]
     }
 
-    private static func codeBlockAttributes(level: CodeBlockLevel) -> [NSAttributedString.Key: Any] {
+    private static func codeBlockAttributes(level: CodeBlockLevel, baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = 5
-        paragraph.paragraphSpacing = 7
-        paragraph.paragraphSpacingBefore = level == .body ? 0 : 6
-        paragraph.headIndent = 14
-        paragraph.firstLineHeadIndent = 14
+        paragraph.lineSpacing = max(1, lineSpacing(for: baseFontSize) - 0.5)
+        paragraph.paragraphSpacing = max(2, paragraphSpacing(for: baseFontSize) - 1)
+        paragraph.paragraphSpacingBefore = level == .body ? 0 : 4
+        paragraph.headIndent = 12
+        paragraph.firstLineHeadIndent = 12
 
         return [
-            .font: MarkdownTheme.codeFont,
+            .font: MarkdownTheme.codeFont(size: baseFontSize),
             .foregroundColor: MarkdownTheme.codeInk,
             .backgroundColor: MarkdownTheme.codeBackground,
             .paragraphStyle: paragraph
         ]
     }
 
-    private static func codeSpanAttributes() -> [NSAttributedString.Key: Any] {
+    private static func codeSpanAttributes(baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         [
-            .font: MarkdownTheme.codeFont,
+            .font: MarkdownTheme.codeFont(size: baseFontSize),
             .foregroundColor: MarkdownTheme.codeInk,
             .backgroundColor: MarkdownTheme.codeBackground
         ]
     }
 
-    private static func strongAttributes() -> [NSAttributedString.Key: Any] {
+    private static func strongAttributes(baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         [
-            .font: MarkdownTheme.strongFont,
+            .font: MarkdownTheme.strongFont(size: baseFontSize),
             .foregroundColor: MarkdownTheme.ink
         ]
     }
 
-    private static func emphasisAttributes() -> [NSAttributedString.Key: Any] {
+    private static func emphasisAttributes(baseFontSize: CGFloat) -> [NSAttributedString.Key: Any] {
         [
-            .font: MarkdownTheme.emphasisFont,
+            .font: MarkdownTheme.emphasisFont(size: baseFontSize),
             .foregroundColor: MarkdownTheme.ink
         ]
     }
@@ -491,20 +509,28 @@ private enum MarkdownStyler {
         ]
     }
 
-    private static func baseParagraphStyle() -> NSMutableParagraphStyle {
+    private static func baseParagraphStyle(baseFontSize: CGFloat) -> NSMutableParagraphStyle {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = 7
-        paragraph.paragraphSpacing = 8
+        paragraph.lineSpacing = lineSpacing(for: baseFontSize)
+        paragraph.paragraphSpacing = paragraphSpacing(for: baseFontSize)
         paragraph.paragraphSpacingBefore = 0
         return paragraph
     }
 
-    static func typingParagraphStyle() -> NSMutableParagraphStyle {
+    static func typingParagraphStyle(baseFontSize: CGFloat) -> NSMutableParagraphStyle {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = 0
+        paragraph.lineSpacing = lineSpacing(for: baseFontSize)
         paragraph.paragraphSpacing = 0
         paragraph.paragraphSpacingBefore = 0
         return paragraph
+    }
+
+    private static func lineSpacing(for baseFontSize: CGFloat) -> CGFloat {
+        max(1.5, floor(baseFontSize * 0.18 * 10) / 10)
+    }
+
+    private static func paragraphSpacing(for baseFontSize: CGFloat) -> CGFloat {
+        max(2.5, floor(baseFontSize * 0.28 * 10) / 10)
     }
 
     private static func range(_ range: NSRange, intersectsAnyOf ranges: [NSRange]) -> Bool {
@@ -526,20 +552,34 @@ private enum MarkdownTheme {
     static let codeInk = NSColor(red: 0.17, green: 0.16, blue: 0.15, alpha: 1)
     static let codeBackground = NSColor(red: 0.93, green: 0.90, blue: 0.84, alpha: 0.95)
 
-    static let bodyFont = textFont(size: 12)
-    static let strongFont = textFont(size: 12, weight: .semibold)
-    static let emphasisFont = italicTextFont(size: 12)
-    static let codeFont = NSFont.monospacedSystemFont(ofSize: 11.5, weight: .regular)
-    static let smallCapsFont = NSFont.systemFont(ofSize: 13, weight: .medium)
+    static func bodyFont(size: CGFloat) -> NSFont {
+        textFont(size: size)
+    }
 
-    static func headingFont(level: Int) -> NSFont {
+    static func strongFont(size: CGFloat) -> NSFont {
+        textFont(size: size, weight: .semibold)
+    }
+
+    static func emphasisFont(size: CGFloat) -> NSFont {
+        italicTextFont(size: size)
+    }
+
+    static func codeFont(size: CGFloat) -> NSFont {
+        NSFont.monospacedSystemFont(ofSize: max(11, size - 0.5), weight: .regular)
+    }
+
+    static func smallCapsFont(size: CGFloat) -> NSFont {
+        NSFont.systemFont(ofSize: size, weight: .medium)
+    }
+
+    static func headingFont(level: Int, baseFontSize: CGFloat) -> NSFont {
         switch level {
-        case 1: textFont(size: 20, weight: .bold)
-        case 2: textFont(size: 17, weight: .bold)
-        case 3: textFont(size: 15, weight: .semibold)
-        case 4: textFont(size: 13.5, weight: .semibold)
-        case 5: textFont(size: 12.5, weight: .medium)
-        default: textFont(size: 12, weight: .medium)
+        case 1: textFont(size: baseFontSize + 7, weight: .bold)
+        case 2: textFont(size: baseFontSize + 4.5, weight: .bold)
+        case 3: textFont(size: baseFontSize + 2.5, weight: .semibold)
+        case 4: textFont(size: baseFontSize + 1.5, weight: .semibold)
+        case 5: textFont(size: baseFontSize + 0.5, weight: .medium)
+        default: textFont(size: baseFontSize, weight: .medium)
         }
     }
 

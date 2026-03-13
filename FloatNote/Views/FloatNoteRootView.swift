@@ -52,8 +52,8 @@ struct FloatNoteRootView: View {
     private var topBar: some View {
         ZStack {
             Text(model.currentTitle)
-                .font(.system(size: 12.5, weight: .medium))
-                .tracking(0.4)
+                .font(.system(size: 13.5, weight: .semibold))
+                .tracking(0.2)
                 .foregroundStyle(Color.floatMuted)
                 .lineLimit(1)
                 .padding(.leading, FloatNoteChromeMetrics.leadingReservation + 10)
@@ -109,7 +109,7 @@ struct FloatNoteRootView: View {
                 ZStack(alignment: .topLeading) {
                     if let note = model.currentNote, note.body.isEmpty, !model.isEditorFocused {
                         Text("제목 없이 바로 입력 시작")
-                            .font(.system(size: 18, weight: .regular))
+                            .font(.system(size: max(16, model.editorFontSize + 4), weight: .regular))
                             .foregroundStyle(Color.floatMuted.opacity(0.78))
                             .padding(.leading, 4)
                             .padding(.top, 8)
@@ -120,6 +120,7 @@ struct FloatNoteRootView: View {
                             get: { model.currentNote?.body ?? "" },
                             set: { model.updateCurrentBody($0) }
                         ),
+                        fontSize: model.editorFontSize,
                         focusToken: model.focusNonce,
                         onFocusChange: { isFocused in
                             model.setEditorFocused(isFocused)

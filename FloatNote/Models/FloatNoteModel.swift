@@ -90,6 +90,35 @@ struct Preferences: Codable, Equatable {
     var previousShortcut: KeyShortcut = .defaultPrevious
     var nextShortcut: KeyShortcut = .defaultNext
     var windowSize: WindowSizePreset = .medium
+    var editorFontSize: Double = 12
+
+    enum CodingKeys: String, CodingKey {
+        case toggleShortcut
+        case previousShortcut
+        case nextShortcut
+        case windowSize
+        case editorFontSize
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        toggleShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .toggleShortcut) ?? .defaultToggle
+        previousShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .previousShortcut) ?? .defaultPrevious
+        nextShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .nextShortcut) ?? .defaultNext
+        windowSize = try container.decodeIfPresent(WindowSizePreset.self, forKey: .windowSize) ?? .medium
+        editorFontSize = try container.decodeIfPresent(Double.self, forKey: .editorFontSize) ?? 12
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(toggleShortcut, forKey: .toggleShortcut)
+        try container.encode(previousShortcut, forKey: .previousShortcut)
+        try container.encode(nextShortcut, forKey: .nextShortcut)
+        try container.encode(windowSize, forKey: .windowSize)
+        try container.encode(editorFontSize, forKey: .editorFontSize)
+    }
 }
 
 enum ShortcutField: String, Codable {
@@ -119,6 +148,13 @@ struct PersistedSnapshot: Codable {
 
 @MainActor
 final class FloatNoteModel: ObservableObject {
+    private enum EditorFontMetrics {
+        static let minimum: Double = 10
+        static let maximum: Double = 22
+        static let step: Double = 1
+        static let `default`: Double = 12
+    }
+
     @Published private(set) var notes: [NoteRecord]
     @Published private(set) var currentNoteID: UUID
     @Published var hasSeenOnboarding: Bool
@@ -190,6 +226,10 @@ final class FloatNoteModel: ObservableObject {
         return fallback
     }
 
+    var editorFontSize: CGFloat {
+        CGFloat(preferences.editorFontSize)
+    }
+
     func updateCurrentBody(_ body: String) {
         guard notes.indices.contains(currentIndex) else { return }
 
@@ -257,6 +297,18 @@ final class FloatNoteModel: ObservableObject {
         persistImmediately()
     }
 
+    func increaseEditorFontSize() {
+        updateEditorFontSize(to: preferences.editorFontSize + EditorFontMetrics.step)
+    }
+
+    func decreaseEditorFontSize() {
+        updateEditorFontSize(to: preferences.editorFontSize - EditorFontMetrics.step)
+    }
+
+    func resetEditorFontSize() {
+        updateEditorFontSize(to: EditorFontMetrics.default)
+    }
+
     func captureShortcut(from event: NSEvent) -> Bool {
         guard let field = recordingField else {
             return false
@@ -305,6 +357,19 @@ final class FloatNoteModel: ObservableObject {
 
         if isSettingsPresented || isOnboardingPresented {
             return false
+        }
+
+        if let zoomCommand = editorZoomCommand(for: event) {
+            switch zoomCommand {
+            case .increase:
+                increaseEditorFontSize()
+            case .decrease:
+                decreaseEditorFontSize()
+            case .reset:
+                resetEditorFontSize()
+            }
+
+            return true
         }
 
         if preferences.previousShortcut.matches(event) {
@@ -365,5 +430,36 @@ final class FloatNoteModel: ObservableObject {
             try? await Task.sleep(for: .milliseconds(220))
             self?.isLeftBoundaryPulsing = false
         }
+    }
+
+    private func updateEditorFontSize(to proposedSize: Double) {
+        let clamped = min(EditorFontMetrics.maximum, max(EditorFontMetrics.minimum, proposedSize))
+        guard abs(preferences.editorFontSize - clamped) > 0.001 else { return }
+        preferences.editorFontSize = clamped
+        persistImmediately()
+    }
+
+    private func editorZoomCommand(for event: NSEvent) -> EditorZoomCommand? {
+        let flags = event.modifierFlags.intersection([.command, .option, .control, .shift])
+        guard flags.contains(.command), !flags.contains(.option), !flags.contains(.control) else {
+            return nil
+        }
+
+        switch Int(event.keyCode) {
+        case kVK_ANSI_Equal, kVK_ANSI_KeypadPlus:
+            return .increase
+        case kVK_ANSI_Minus, kVK_ANSI_KeypadMinus:
+            return .decrease
+        case kVK_ANSI_0, kVK_ANSI_Keypad0:
+            return .reset
+        default:
+            return nil
+        }
+    }
+
+    private enum EditorZoomCommand {
+        case increase
+        case decrease
+        case reset
     }
 }
