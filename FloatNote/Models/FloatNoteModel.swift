@@ -8,6 +8,26 @@ struct NoteRecord: Codable, Equatable, Identifiable {
     let createdAt: Date
     var updatedAt: Date
 
+    var displayTitle: String {
+        let fallback = "FloatNote"
+
+        for rawLine in body.split(whereSeparator: \.isNewline) {
+            let line = rawLine
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(
+                    of: #"^(#{1,6}\s*|[-*+]\s+|>\s*|\d+\.\s+|`+)"#,
+                    with: "",
+                    options: .regularExpression
+                )
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !line.isEmpty else { continue }
+            return String(line.prefix(28))
+        }
+
+        return fallback
+    }
+
     static func seedNotes() -> [NoteRecord] {
         let now = Date()
 
@@ -127,18 +147,6 @@ enum ShortcutField: String, Codable {
     case next
 }
 
-enum SaveState {
-    case saving
-    case saved
-
-    var label: String {
-        switch self {
-        case .saving: "Saving"
-        case .saved: "Saved"
-        }
-    }
-}
-
 struct PersistedSnapshot: Codable {
     var notes: [NoteRecord]
     var currentNoteID: UUID
@@ -157,16 +165,15 @@ final class FloatNoteModel: ObservableObject {
 
     @Published private(set) var notes: [NoteRecord]
     @Published private(set) var currentNoteID: UUID
-    @Published var hasSeenOnboarding: Bool
     @Published var isOnboardingPresented: Bool
     @Published var isSettingsPresented = false
     @Published var recordingField: ShortcutField?
     @Published var preferences: Preferences
-    @Published var saveState: SaveState = .saved
     @Published var isLeftBoundaryPulsing = false
     @Published var isEditorFocused = false
     @Published var focusNonce = UUID()
 
+    private var hasSeenOnboarding: Bool
     private let persistence = StatePersistence()
     private var saveTask: Task<Void, Never>?
 
@@ -196,9 +203,8 @@ final class FloatNoteModel: ObservableObject {
         notes.firstIndex(where: { $0.id == currentNoteID }) ?? 0
     }
 
-    var currentNote: NoteRecord? {
-        guard notes.indices.contains(currentIndex) else { return nil }
-        return notes[currentIndex]
+    var currentNote: NoteRecord {
+        notes[currentIndex]
     }
 
     var positionLabel: String {
@@ -206,28 +212,19 @@ final class FloatNoteModel: ObservableObject {
     }
 
     var currentTitle: String {
-        let fallback = "FloatNote"
-        guard let body = currentNote?.body else { return fallback }
-
-        for rawLine in body.split(whereSeparator: \.isNewline) {
-            let line = rawLine
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-                .replacingOccurrences(
-                    of: #"^(#{1,6}\s*|[-*+]\s+|>\s*|\d+\.\s+|`+)"#,
-                    with: "",
-                    options: .regularExpression
-                )
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-
-            guard !line.isEmpty else { continue }
-            return String(line.prefix(28))
-        }
-
-        return fallback
+        currentNote.displayTitle
     }
 
     var editorFontSize: CGFloat {
         CGFloat(preferences.editorFontSize)
+    }
+
+    var canGoToPreviousNote: Bool {
+        currentIndex > 0
+    }
+
+    var shouldShowPlaceholder: Bool {
+        currentNote.body.isEmpty && !isEditorFocused
     }
 
     func updateCurrentBody(_ body: String) {
@@ -286,6 +283,10 @@ final class FloatNoteModel: ObservableObject {
         isSettingsPresented = false
         requestEditorFocus()
         persistImmediately()
+    }
+
+    func showSettings() {
+        isSettingsPresented = true
     }
 
     func setRecordingField(_ field: ShortcutField?) {
@@ -396,13 +397,11 @@ final class FloatNoteModel: ObservableObject {
 
     func persistImmediately() {
         saveTask?.cancel()
-        saveState = .saved
         persistence.save(makeSnapshot())
     }
 
     private func scheduleSave() {
         saveTask?.cancel()
-        saveState = .saving
 
         let snapshot = makeSnapshot()
 
@@ -410,7 +409,6 @@ final class FloatNoteModel: ObservableObject {
             try? await Task.sleep(for: .milliseconds(260))
             guard !Task.isCancelled else { return }
             self?.persistence.save(snapshot)
-            self?.saveState = .saved
         }
     }
 

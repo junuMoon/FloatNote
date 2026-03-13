@@ -38,7 +38,6 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
         configureWindow()
         bindModel()
         installLocalMonitor()
-        registerToggleHotKey()
     }
 
     func showWindow() {
@@ -73,12 +72,7 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
     }
 
     private func configureWindow() {
-        let rootView = FloatNoteRootView(
-            model: model,
-            onClose: { [weak self] in
-                self?.hideWindow()
-            }
-        )
+        let rootView = FloatNoteRootView(model: model)
 
         let hostingController = NSHostingController(rootView: rootView)
 
@@ -120,14 +114,6 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
                 self?.resizeWindow(to: preset.size)
             }
             .store(in: &cancellables)
-    }
-
-    private func registerToggleHotKey() {
-        hotKeyMonitor.register(shortcut: model.preferences.toggleShortcut) { [weak self] in
-            Task { @MainActor in
-                self?.toggleWindow()
-            }
-        }
     }
 
     private func resizeWindow(to size: NSSize) {

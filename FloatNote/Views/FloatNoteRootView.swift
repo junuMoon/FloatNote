@@ -2,7 +2,6 @@ import SwiftUI
 
 struct FloatNoteRootView: View {
     @ObservedObject var model: FloatNoteModel
-    let onClose: () -> Void
 
     var body: some View {
         ZStack {
@@ -66,7 +65,7 @@ struct FloatNoteRootView: View {
                 Spacer(minLength: 0)
 
                 HStack(spacing: 6) {
-                    toolbarIcon("chevron.left", disabled: model.currentIndex == 0) {
+                    toolbarIcon("chevron.left", disabled: !model.canGoToPreviousNote) {
                         model.goToPreviousNote()
                     }
 
@@ -82,7 +81,7 @@ struct FloatNoteRootView: View {
                     toolbarDivider
 
                     toolbarIcon("slider.horizontal.3") {
-                        model.isSettingsPresented = true
+                        model.showSettings()
                     }
 
                     toolbarIcon("plus") {
@@ -107,7 +106,7 @@ struct FloatNoteRootView: View {
         ZStack(alignment: .topLeading) {
             HStack(alignment: .top, spacing: 0) {
                 ZStack(alignment: .topLeading) {
-                    if let note = model.currentNote, note.body.isEmpty, !model.isEditorFocused {
+                    if model.shouldShowPlaceholder {
                         Text("제목 없이 바로 입력 시작")
                             .font(.system(size: max(16, model.editorFontSize + 4), weight: .regular))
                             .foregroundStyle(Color.floatMuted.opacity(0.78))
@@ -117,7 +116,7 @@ struct FloatNoteRootView: View {
 
                     MarkdownTextEditor(
                         text: Binding(
-                            get: { model.currentNote?.body ?? "" },
+                            get: { model.currentNote.body },
                             set: { model.updateCurrentBody($0) }
                         ),
                         fontSize: model.editorFontSize,
@@ -240,11 +239,11 @@ struct FloatNoteRootView: View {
 
     private var footer: some View {
         HStack {
-            Text("Created \(formatted(date: model.currentNote?.createdAt))")
+            Text("Created \(formatted(date: model.currentNote.createdAt))")
 
             Spacer(minLength: 0)
 
-            Text("Updated \(formatted(date: model.currentNote?.updatedAt))")
+            Text("Updated \(formatted(date: model.currentNote.updatedAt))")
         }
         .font(.system(size: 10.5, weight: .regular))
         .foregroundStyle(Color.floatMeta)
@@ -335,8 +334,7 @@ struct FloatNoteRootView: View {
         .opacity(disabled ? 0.32 : 1)
     }
 
-    private func formatted(date: Date?) -> String {
-        guard let date else { return "-" }
+    private func formatted(date: Date) -> String {
         return Self.dateFormatter.string(from: date)
     }
 

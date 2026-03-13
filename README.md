@@ -1,55 +1,54 @@
 # FloatNote
 
-FloatNote is now a native macOS app built with Swift, SwiftUI, and AppKit.
+FloatNote는 전역 단축키로 바로 띄워 쓰는 네이티브 macOS 플로팅 노트 앱입니다. 현재 구현은 `Swift + SwiftUI + AppKit + NSTextView` 기준으로 정리되어 있습니다.
 
-The repository keeps the product and UX documents at the root, and the app itself follows the same layout style as `Glacier`:
+## 현재 범위
 
-- `project.yml` at the root
-- `FloatNote/` for app source
-- `FloatNote.xcodeproj` generated from XcodeGen
-- `FloatNote.entitlements` at the root
+- 플로팅 macOS 창
+- 기본 전역 핫키 `Control + A`
+- 이전/다음 노트 이동 단축키
+- 생성 순서 기반 노트 이동과 마지막 노트에서 새 노트 생성
+- 실시간 마크다운 스타일링
+- `Cmd +`, `Cmd -`, `Cmd 0` 본문 글자 크기 조절
+- 하단 `Created / Updated`
+- 설정 오버레이와 단축키 변경
+- `Application Support` JSON 저장
 
-## Run
+## 레포 구조
 
-Open the project directly:
+- `FloatNote/`: 앱 소스
+- `project.yml`: XcodeGen 정의
+- `FloatNote.xcodeproj`: 생성된 Xcode 프로젝트
+- `scripts/install-to-applications.sh`: 빌드 후 설치/재등록 스크립트
+- `PRODUCT_PLAN.md`: 제품 범위와 동작 규칙
+- `DESIGN_PRINCIPLES.md`: 시각 원칙과 macOS 유틸리티 앱 기준
+
+## 실행
+
+프로젝트 열기:
 
 ```bash
 cd /Users/fran/Workspace/FloatNote
 open FloatNote.xcodeproj
 ```
 
-Regenerate the Xcode project only if you change `project.yml`:
+빌드:
+
+```bash
+cd /Users/fran/Workspace/FloatNote
+xcodebuild -project FloatNote.xcodeproj -scheme FloatNote -configuration Debug build
+```
+
+`project.yml`을 바꿨을 때만:
 
 ```bash
 cd /Users/fran/Workspace/FloatNote
 xcodegen generate
 ```
 
-Build from the command line:
+빌드가 성공하면 설치본이 자동으로 갱신됩니다. 우선 `~/Applications`를 시도하고, 이 환경처럼 쓰기 불가면 `/Users/fran/Workspace/Applications/FloatNote.app`에 설치한 뒤 LaunchServices와 Spotlight를 다시 등록합니다.
 
-```bash
-xcodebuild -project FloatNote.xcodeproj -scheme FloatNote -configuration Debug build
-```
-
-Every successful build also installs `FloatNote.app` into the first writable app location, preferring `~/Applications` and falling back to `~/Workspace/Applications`, then re-registers it with LaunchServices and Spotlight so `FloatNote` appears in Spotlight search.
-
-## Current Native MVP
-
-- floating macOS window
-- global toggle hotkey with default `Control + A`
-- local older / newer shortcuts with default `Control + Shift + Left/Right`
-- live markdown styling for headings, lists, quotes, emphasis, links, and fenced code
-- last viewed note restore
-- note navigation in creation order
-- new note creation from the right edge
-- footer `Created` / `Updated`
-- onboarding overlay
-- settings overlay with shortcut capture and window size
-- local JSON persistence in Application Support
-
-## Docs
+## 문서
 
 - [PRODUCT_PLAN.md](/Users/fran/Workspace/FloatNote/PRODUCT_PLAN.md)
-- [UX_FLOW.md](/Users/fran/Workspace/FloatNote/UX_FLOW.md)
-- [WIREFRAMES.md](/Users/fran/Workspace/FloatNote/WIREFRAMES.md)
-- [README.md](/Users/fran/Workspace/FloatNote/design/lowfi/README.md)
+- [DESIGN_PRINCIPLES.md](/Users/fran/Workspace/FloatNote/DESIGN_PRINCIPLES.md)
