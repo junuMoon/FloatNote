@@ -58,6 +58,7 @@ struct FloatNoteRootView: View {
                 .lineLimit(1)
                 .padding(.leading, FloatNoteChromeMetrics.leadingReservation + 10)
                 .padding(.trailing, 150)
+                .padding(.top, 1)
 
             HStack(spacing: 0) {
                 Color.clear
