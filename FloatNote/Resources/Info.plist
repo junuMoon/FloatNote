@@ -4,6 +4,10 @@
 <dict>
     <key>CFBundleName</key>
     <string>FloatNote</string>
+    <key>CFBundleDisplayName</key>
+    <string>FloatNote</string>
+    <key>CFBundleSpokenName</key>
+    <string>FloatNote</string>
     <key>CFBundleIdentifier</key>
     <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
     <key>CFBundleVersion</key>

@@ -10,6 +10,11 @@ targets:
     type: application
     platform: macOS
     sources: [FloatNote]
+    postBuildScripts:
+      - name: Install to Applications
+        basedOnDependencyAnalysis: false
+        script: |
+          "$SRCROOT/scripts/install-to-applications.sh"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.floatnote.app

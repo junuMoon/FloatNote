@@ -107,6 +107,7 @@
 			buildPhases = (
 				A77EADCBA988DBE79DCEC562 /* Sources */,
 				0BD2FBCFDF62DE62E30686D4 /* Resources */,
+				D63710199AACF04E8BFD4E77 /* Install to Applications */,
 			);
 			buildRules = (
 			);
@@ -157,6 +158,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D63710199AACF04E8BFD4E77 /* Install to Applications */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Install to Applications";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/scripts/install-to-applications.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A77EADCBA988DBE79DCEC562 /* Sources */ = {

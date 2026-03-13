@@ -31,6 +31,8 @@ xcodegen generate
 xcodebuild -project FloatNote.xcodeproj -scheme FloatNote -configuration Debug build
 ```
 
+빌드가 성공하면 `FloatNote.app` 이 자동으로 설치됩니다. 우선 `~/Applications` 를 쓰고, 그 경로가 막혀 있으면 `~/Workspace/Applications` 로 fallback 한 뒤 LaunchServices 와 Spotlight 에 다시 등록합니다. 그래서 Spotlight 에서 `FloatNote` 로 바로 검색됩니다.
+
 ## 현재 구현 범위
 
 - 플로팅 macOS 윈도우

@@ -31,6 +31,8 @@ Build from the command line:
 xcodebuild -project FloatNote.xcodeproj -scheme FloatNote -configuration Debug build
 ```
 
+Every successful build also installs `FloatNote.app` into the first writable app location, preferring `~/Applications` and falling back to `~/Workspace/Applications`, then re-registers it with LaunchServices and Spotlight so `FloatNote` appears in Spotlight search.
+
 ## Current Native MVP
 
 - floating macOS window
