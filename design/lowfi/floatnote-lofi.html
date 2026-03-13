@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FloatNote Low-Fi</title>
+    <style>
+      :root {
+        --paper: #f5f2eb;
+        --ink: #1e1d1a;
+        --muted: #6b675f;
+        --line: #bfb8ab;
+        --panel: #fffdf8;
+        --panel-alt: #f0ebe2;
+        --accent: #d8cfbf;
+        --shadow: rgba(38, 32, 24, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at top left, rgba(216, 207, 191, 0.4), transparent 26%),
+          linear-gradient(180deg, #f8f5ef 0%, var(--paper) 100%);
+        color: var(--ink);
+        font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+      }
+
+      main {
+        width: min(1200px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 40px 0 72px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+        gap: 24px;
+        align-items: start;
+        margin-bottom: 28px;
+      }
+
+      .hero-block,
+      .summary {
+        background: rgba(255, 253, 248, 0.76);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(191, 184, 171, 0.85);
+        border-radius: 24px;
+        box-shadow: 0 16px 40px var(--shadow);
+      }
+
+      .hero-block {
+        padding: 28px 30px;
+      }
+
+      .summary {
+        padding: 22px 24px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--panel-alt);
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-weight: 600;
+      }
+
+      h1 {
+        margin-top: 14px;
+        font-size: clamp(36px, 4vw, 52px);
+        line-height: 1.03;
+        letter-spacing: -0.04em;
+      }
+
+      .hero p,
+      .summary p,
+      .notes li,
+      .meta-list li,
+      .flow li,
+      .legend li {
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 15px;
+      }
+
+      .hero p {
+        max-width: 54ch;
+        margin: 14px 0 0;
+      }
+
+      .meta-list,
+      .flow,
+      .legend {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0 0;
+      }
+
+      .meta-list li,
+      .legend li {
+        padding: 10px 0;
+        border-top: 1px solid rgba(191, 184, 171, 0.6);
+      }
+
+      .flow {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .flow li {
+        padding: 9px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .screen-grid {
+        display: grid;
+        gap: 28px;
+      }
+
+      .screen {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+        gap: 22px;
+        align-items: start;
+      }
+
+      .screen-copy {
+        padding-top: 8px;
+      }
+
+      .screen-copy h2 {
+        font-size: 28px;
+        letter-spacing: -0.03em;
+      }
+
+      .screen-copy p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .notes {
+        margin: 16px 0 0;
+        padding-left: 18px;
+      }
+
+      .notes li {
+        margin: 8px 0;
+      }
+
+      .window-shell {
+        position: relative;
+        background: rgba(255, 253, 248, 0.5);
+        border-radius: 28px;
+        padding: 18px;
+        border: 1px solid rgba(191, 184, 171, 0.82);
+        box-shadow: 0 18px 42px var(--shadow);
+      }
+
+      .window {
+        background: var(--panel);
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        overflow: hidden;
+        min-height: 530px;
+      }
+
+      .titlebar {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 16px;
+        align-items: center;
+        min-height: 62px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--line);
+        background: #f7f3eb;
+      }
+
+      .brand {
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .position {
+        justify-self: center;
+        font-size: 14px;
+        color: var(--muted);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .title-actions {
+        display: inline-flex;
+        gap: 8px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 34px;
+        height: 34px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .editor {
+        position: relative;
+        min-height: 412px;
+        padding: 28px;
+        background:
+          linear-gradient(transparent 31px, rgba(191, 184, 171, 0.18) 32px),
+          linear-gradient(90deg, rgba(216, 207, 191, 0.25), rgba(216, 207, 191, 0.05));
+        background-size: 100% 32px, 100% 100%;
+      }
+
+      .editor-lines {
+        display: grid;
+        gap: 14px;
+        max-width: 88%;
+      }
+
+      .line {
+        height: 10px;
+        border-radius: 999px;
+        background: #b8aea0;
+      }
+
+      .line.short {
+        width: 36%;
+      }
+
+      .line.medium {
+        width: 62%;
+      }
+
+      .line.long {
+        width: 88%;
+      }
+
+      .line.code {
+        width: 58%;
+        background: #9f9384;
+      }
+
+      .line.heading {
+        height: 14px;
+        width: 44%;
+        background: #8f8271;
+      }
+
+      .line.dim {
+        opacity: 0.65;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        min-height: 56px;
+        padding: 14px 20px;
+        border-top: 1px solid var(--line);
+        background: #f8f4ec;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .footer span:last-child {
+        text-align: right;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 86px 66px 112px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 430px;
+        padding: 26px 24px;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: rgba(255, 253, 248, 0.97);
+        box-shadow: 0 18px 40px rgba(38, 32, 24, 0.16);
+      }
+
+      .card h3 {
+        font-size: 24px;
+        letter-spacing: -0.04em;
+      }
+
+      .card ol {
+        margin: 16px 0 0;
+        padding-left: 20px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .card p {
+        margin: 14px 0 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 18px;
+        padding: 12px 18px;
+        border-radius: 999px;
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: #f7f3eb;
+        font-size: 14px;
+      }
+
+      .edge-pulse {
+        position: absolute;
+        left: 26px;
+        top: 112px;
+        bottom: 86px;
+        width: 8px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #a89a88 0%, rgba(168, 154, 136, 0.1) 100%);
+      }
+
+      .edge-label {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 13px;
+        text-align: center;
+      }
+
+      .settings-sheet {
+        background: rgba(255, 253, 248, 0.5);
+        border-radius: 28px;
+        padding: 18px;
+        border: 1px solid rgba(191, 184, 171, 0.82);
+        box-shadow: 0 18px 42px var(--shadow);
+      }
+
+      .sheet {
+        max-width: 520px;
+        margin: 0 auto;
+        background: var(--panel);
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        overflow: hidden;
+      }
+
+      .sheet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--line);
+        background: #f7f3eb;
+      }
+
+      .sheet-body {
+        padding: 20px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .setting {
+        padding: 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(191, 184, 171, 0.72);
+        background: #faf7f0;
+      }
+
+      .setting-title {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .setting-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 10px;
+      }
+
+      .input {
+        flex: 1;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--ink);
+        font-size: 14px;
+      }
+
+      .mini {
+        min-width: 76px;
+        height: 42px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: var(--panel-alt);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .annotation {
+        background: rgba(255, 253, 248, 0.76);
+        border: 1px solid rgba(191, 184, 171, 0.85);
+        border-radius: 20px;
+        padding: 18px 18px 16px;
+        box-shadow: 0 12px 30px var(--shadow);
+      }
+
+      .annotation h3 {
+        font-size: 18px;
+        letter-spacing: -0.03em;
+      }
+
+      .annotation ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+      }
+
+      .annotation li {
+        color: var(--muted);
+        line-height: 1.7;
+        margin: 6px 0;
+      }
+
+      .divider {
+        height: 1px;
+        margin: 30px 0 8px;
+        background: linear-gradient(90deg, transparent, var(--line), transparent);
+      }
+
+      @media (max-width: 960px) {
+        main {
+          width: min(100vw - 28px, 900px);
+          padding-top: 22px;
+        }
+
+        .hero,
+        .screen {
+          grid-template-columns: 1fr;
+        }
+
+        .window {
+          min-height: 480px;
+        }
+
+        .overlay {
+          inset: 76px 26px 98px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="hero-block">
+          <span class="eyebrow">Low-Fi Cycle</span>
+          <h1>FloatNote should feel like a thin layer over work, not a second app.</h1>
+          <p>
+            This low-fi pass validates one thing first: whether the floating note window
+            keeps attention on the body while still exposing note position, settings access,
+            and quiet metadata at the bottom.
+          </p>
+          <ul class="flow">
+            <li>Hidden</li>
+            <li>Open on global shortcut</li>
+            <li>Resume last note</li>
+            <li>Write immediately</li>
+            <li>Navigate by creation order</li>
+            <li>Close back to work</li>
+          </ul>
+        </div>
+        <aside class="summary">
+          <span class="eyebrow">Validation</span>
+          <ul class="meta-list">
+            <li>Body owns most of the window.</li>
+            <li>Top bar stays thin and utility-like.</li>
+            <li>`Created` and `Updated` remain always visible but quiet.</li>
+            <li>New note creation reads as a navigation outcome, not a separate flow.</li>
+            <li>Settings stay small enough to feel secondary.</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="screen-grid">
+        <article class="screen">
+          <div class="window-shell">
+            <div class="window">
+              <div class="titlebar">
+                <div class="brand">FloatNote</div>
+                <div class="position">12 / 37</div>
+                <div class="title-actions">
+                  <span class="chip">Settings</span>
+                  <span class="chip">Close</span>
+                </div>
+              </div>
+              <div class="editor">
+                <div class="editor-lines">
+                  <div class="line heading"></div>
+                  <div class="line long"></div>
+                  <div class="line medium"></div>
+                  <div class="line short"></div>
+                  <div class="line heading"></div>
+                  <div class="line long"></div>
+                  <div class="line code"></div>
+                  <div class="line medium dim"></div>
+                  <div class="line long dim"></div>
+                  <div class="line short dim"></div>
+                </div>
+              </div>
+              <div class="footer">
+                <span>Created 2026-03-13 10:14</span>
+                <span>Updated 2026-03-13 10:42</span>
+              </div>
+            </div>
+          </div>
+          <div class="screen-copy">
+            <span class="eyebrow">Screen 01</span>
+            <h2>Main floating window</h2>
+            <p>
+              The body dominates immediately. The top bar only carries identity, note position,
+              and two secondary controls. This should feel closer to a temporary writing surface
+              than a document editor.
+            </p>
+            <ul class="notes">
+              <li>No dedicated title field. Writing begins in one continuous body area.</li>
+              <li>Note position stays visible enough to support left/right navigation.</li>
+              <li>The footer is fixed so metadata never jumps when content grows.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="screen">
+          <div class="window-shell">
+            <div class="window">
+              <div class="titlebar">
+                <div class="brand">FloatNote</div>
+                <div class="position">38 / 38</div>
+                <div class="title-actions">
+                  <span class="chip">Settings</span>
+                  <span class="chip">Close</span>
+                </div>
+              </div>
+              <div class="editor">
+                <div class="editor-lines">
+                  <div class="line short"></div>
+                  <div class="line dim short" style="width: 22%;"></div>
+                </div>
+              </div>
+              <div class="footer">
+                <span>Created just now</span>
+                <span>Updated just now</span>
+              </div>
+            </div>
+          </div>
+          <div class="screen-copy">
+            <span class="eyebrow">Screen 02</span>
+            <h2>New note state</h2>
+            <p>
+              The new note should not announce itself with a modal. A blank body and the updated
+              position count are enough to communicate that the user has moved into a fresh note.
+            </p>
+            <ul class="notes">
+              <li>Empty state copy should be minimal and action-oriented.</li>
+              <li>Navigation count remains at the top to reinforce sequence continuity.</li>
+              <li>This screen must feel like the same flow, not a separate creation screen.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="screen">
+          <div class="window-shell">
+            <div class="window">
+              <div class="titlebar">
+                <div class="brand">FloatNote</div>
+                <div class="position">1 / 37</div>
+                <div class="title-actions">
+                  <span class="chip">Settings</span>
+                  <span class="chip">Close</span>
+                </div>
+              </div>
+              <div class="editor">
+                <span class="edge-pulse"></span>
+                <div class="editor-lines">
+                  <div class="line heading" style="width: 30%;"></div>
+                  <div class="line long"></div>
+                  <div class="line medium"></div>
+                  <div class="line long dim"></div>
+                  <div class="line short dim"></div>
+                </div>
+              </div>
+              <div class="footer">
+                <span>Created 2026-03-01 09:10</span>
+                <span>Updated 2026-03-01 09:12</span>
+              </div>
+            </div>
+            <div class="edge-label">Left boundary feedback: subtle edge highlight only</div>
+          </div>
+          <div class="screen-copy">
+            <span class="eyebrow">Screen 03</span>
+            <h2>First-note boundary</h2>
+            <p>
+              When the user tries to move further left from the oldest note, the screen should stay
+              put. A light edge response is enough. Anything heavier would interrupt the “quick note”
+              rhythm.
+            </p>
+            <ul class="notes">
+              <li>No modal, toast, or warning sentence.</li>
+              <li>No layout shift. The note stays stable in place.</li>
+              <li>The feedback should confirm the edge without feeling punitive.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="screen">
+          <div class="window-shell">
+            <div class="window">
+              <div class="titlebar">
+                <div class="brand">FloatNote</div>
+                <div class="position">1 / 1</div>
+                <div class="title-actions">
+                  <span class="chip">Settings</span>
+                  <span class="chip">Close</span>
+                </div>
+              </div>
+              <div class="editor">
+                <div class="overlay">
+                  <div class="card">
+                    <h3>FloatNote 시작하기</h3>
+                    <ol>
+                      <li>`Control + A` 로 창 열기</li>
+                      <li>바로 입력 시작</li>
+                      <li>이동 키로 노트 넘기기</li>
+                    </ol>
+                    <p>기본 단축키는 설정에서 바꿀 수 있습니다.</p>
+                    <span class="button">시작하기</span>
+                  </div>
+                </div>
+              </div>
+              <div class="footer">
+                <span>Created just now</span>
+                <span>Updated just now</span>
+              </div>
+            </div>
+          </div>
+          <div class="screen-copy">
+            <span class="eyebrow">Screen 04</span>
+            <h2>First-run overlay</h2>
+            <p>
+              Onboarding should live inside the main window rather than steal the user into a new
+              environment. The structure stays familiar, and the instructions stay short enough to scan
+              once and dismiss.
+            </p>
+            <ul class="notes">
+              <li>Three lines of instruction are enough.</li>
+              <li>The overlay confirms the core loop: open, write, move.</li>
+              <li>The user still sees the actual app frame underneath.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="screen">
+          <div class="settings-sheet">
+            <div class="sheet">
+              <div class="sheet-header">
+                <div class="brand">Settings</div>
+                <span class="chip">Close</span>
+              </div>
+              <div class="sheet-body">
+                <div class="setting">
+                  <div class="setting-title">Global Shortcut</div>
+                  <div class="setting-row">
+                    <div class="input">Control + A</div>
+                    <div class="mini">Change</div>
+                  </div>
+                </div>
+                <div class="setting">
+                  <div class="setting-title">Note Navigation</div>
+                  <div class="setting-row">
+                    <div class="input">Prev shortcut</div>
+                    <div class="mini">Change</div>
+                  </div>
+                  <div class="setting-row">
+                    <div class="input">Next shortcut</div>
+                    <div class="mini">Change</div>
+                  </div>
+                </div>
+                <div class="setting">
+                  <div class="setting-title">Window Size</div>
+                  <div class="setting-row">
+                    <div class="input">Medium</div>
+                    <div class="mini">Select</div>
+                  </div>
+                </div>
+                <div class="setting">
+                  <div class="setting-title">Collision Detection</div>
+                  <div class="setting-row">
+                    <div class="input">Suggest an alternative when the shortcut conflicts.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="screen-copy">
+            <span class="eyebrow">Screen 05</span>
+            <h2>Settings sheet</h2>
+            <p>
+              Settings should feel like a short interruption, not another workspace. The visual weight
+              stays lower than the main note window, and the ordering reflects the real priority:
+              invoke key first, navigation second, size third.
+            </p>
+            <ul class="notes">
+              <li>Shortcut management stays grouped and obvious.</li>
+              <li>There is no broad preference taxonomy yet.</li>
+              <li>This can open as a sheet or a small independent window on macOS.</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="screen" style="align-items: stretch;">
+        <div class="annotation">
+          <h3>What this cycle locks in</h3>
+          <ul>
+            <li>Single-window note interaction stays intact.</li>
+            <li>The top bar remains utility-thin rather than editor-heavy.</li>
+            <li>Footer metadata is permanently visible.</li>
+            <li>New note creation is visually the same flow as note navigation.</li>
+            <li>Onboarding and settings stay secondary to writing.</li>
+          </ul>
+        </div>
+        <div class="annotation">
+          <h3>What stays deliberately unresolved</h3>
+          <ul>
+            <li>Default previous/next note shortcuts.</li>
+            <li>2nd-stage inline markdown rendering behavior.</li>
+            <li>Visual identity, color system, and motion language.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
