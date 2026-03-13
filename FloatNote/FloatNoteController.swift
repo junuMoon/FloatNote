@@ -2,6 +2,19 @@ import AppKit
 import Combine
 import SwiftUI
 
+enum FloatNoteChromeMetrics {
+    static let cornerRadius: CGFloat = 28
+    static let topBarHeight: CGFloat = 46
+    static let trafficLightLeadingInset: CGFloat = 18
+    static let trafficLightSpacing: CGFloat = 6
+    static let horizontalInset: CGFloat = 24
+    static let leadingReservation: CGFloat = 92
+    static let trailingToolbarInset: CGFloat = 22
+    static let documentHorizontalInset: CGFloat = 28
+    static let documentTopInset: CGFloat = 18
+    static let footerHorizontalInset: CGFloat = 28
+}
+
 @MainActor
 final class FloatNoteController: NSObject, NSWindowDelegate {
     private let model = FloatNoteModel()
@@ -42,6 +55,7 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
         window.orderFrontRegardless()
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        scheduleWindowChromeLayout()
         model.requestEditorFocus()
     }
 
@@ -83,6 +97,7 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
         window.isOpaque = false
         window.hasShadow = true
         window.delegate = self
+        scheduleWindowChromeLayout()
     }
 
     private func bindModel() {
@@ -123,6 +138,7 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
         )
         let newFrame = NSRect(origin: newOrigin, size: size)
         window.setFrame(newFrame, display: true, animate: true)
+        scheduleWindowChromeLayout()
     }
 
     private func activeScreen() -> NSScreen? {
@@ -137,6 +153,35 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
             return self.model.handleLocalKeyDown(event) {
                 self.hideWindow()
             } ? nil : event
+        }
+    }
+
+    func windowDidResize(_ notification: Notification) {
+        scheduleWindowChromeLayout()
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        scheduleWindowChromeLayout()
+    }
+
+    private func scheduleWindowChromeLayout() {
+        DispatchQueue.main.async { [weak self] in
+            self?.layoutWindowChrome()
+        }
+    }
+
+    private func layoutWindowChrome() {
+        let buttonKinds: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
+        let buttons = buttonKinds.compactMap { window.standardWindowButton($0) }
+        guard let firstButton = buttons.first else { return }
+
+        let containerHeight = firstButton.superview?.bounds.height ?? firstButton.frame.height
+        let y = max(8, round((containerHeight - firstButton.frame.height) / 2))
+        var x = FloatNoteChromeMetrics.trafficLightLeadingInset
+
+        for button in buttons {
+            button.setFrameOrigin(NSPoint(x: x, y: y))
+            x += button.frame.width + FloatNoteChromeMetrics.trafficLightSpacing
         }
     }
 }

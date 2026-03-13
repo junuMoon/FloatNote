@@ -14,7 +14,6 @@ struct FloatNoteRootView: View {
                 documentSurface
                 footer
             }
-            .padding(.top, 8)
         }
         .frame(minWidth: 640, minHeight: 460)
         .overlay(alignment: .leading) {
@@ -35,7 +34,7 @@ struct FloatNoteRootView: View {
     }
 
     private var backgroundLayer: some View {
-        RoundedRectangle(cornerRadius: 28, style: .continuous)
+        RoundedRectangle(cornerRadius: FloatNoteChromeMetrics.cornerRadius, style: .continuous)
             .fill(
                 LinearGradient(
                     colors: [Color.floatCanvasTop, Color.floatCanvasBottom],
@@ -44,7 +43,7 @@ struct FloatNoteRootView: View {
                 )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                RoundedRectangle(cornerRadius: FloatNoteChromeMetrics.cornerRadius, style: .continuous)
                     .stroke(Color.floatLineStrong, lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.08), radius: 20, y: 14)
@@ -57,11 +56,12 @@ struct FloatNoteRootView: View {
                 .tracking(0.4)
                 .foregroundStyle(Color.floatMuted)
                 .lineLimit(1)
-                .padding(.horizontal, 120)
+                .padding(.leading, FloatNoteChromeMetrics.leadingReservation + 10)
+                .padding(.trailing, 150)
 
             HStack(spacing: 0) {
                 Color.clear
-                    .frame(width: 86, height: 30)
+                    .frame(width: FloatNoteChromeMetrics.leadingReservation, height: FloatNoteChromeMetrics.topBarHeight)
 
                 Spacer(minLength: 0)
 
@@ -91,9 +91,9 @@ struct FloatNoteRootView: View {
                 }
             }
         }
-        .padding(.horizontal, 18)
-        .padding(.top, 2)
-        .padding(.bottom, 6)
+        .frame(height: FloatNoteChromeMetrics.topBarHeight)
+        .padding(.leading, FloatNoteChromeMetrics.horizontalInset)
+        .padding(.trailing, FloatNoteChromeMetrics.trailingToolbarInset)
     }
 
     private var toolbarDivider: some View {
@@ -130,8 +130,8 @@ struct FloatNoteRootView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 28)
-            .padding(.top, 8)
+            .padding(.horizontal, FloatNoteChromeMetrics.documentHorizontalInset)
+            .padding(.top, FloatNoteChromeMetrics.documentTopInset)
             .padding(.bottom, 14)
 
             if model.isOnboardingPresented {
@@ -247,7 +247,7 @@ struct FloatNoteRootView: View {
         }
         .font(.system(size: 10.5, weight: .regular))
         .foregroundStyle(Color.floatMeta)
-        .padding(.horizontal, 28)
+        .padding(.horizontal, FloatNoteChromeMetrics.footerHorizontalInset)
         .padding(.bottom, 14)
         .padding(.top, 4)
     }
