@@ -5,9 +5,10 @@ import SwiftUI
 struct MarkdownTextEditor: NSViewRepresentable {
     @Binding var text: String
     let focusToken: UUID
+    let onFocusChange: (Bool) -> Void
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text)
+        Coordinator(text: $text, onFocusChange: onFocusChange)
     }
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -18,7 +19,7 @@ struct MarkdownTextEditor: NSViewRepresentable {
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
 
-        let textView = NSTextView()
+        let textView = TrackingTextView()
         textView.delegate = context.coordinator
         textView.drawsBackground = false
         textView.backgroundColor = .clear
@@ -58,6 +59,7 @@ struct MarkdownTextEditor: NSViewRepresentable {
     }
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        context.coordinator.onFocusChange = onFocusChange
         context.coordinator.render(text: text)
         context.coordinator.focusIfNeeded(using: focusToken)
     }
@@ -66,15 +68,20 @@ struct MarkdownTextEditor: NSViewRepresentable {
     final class Coordinator: NSObject, NSTextViewDelegate {
         @Binding private var text: String
         private weak var textView: NSTextView?
+        var onFocusChange: (Bool) -> Void
         private var isApplyingProgrammaticChange = false
         private var lastFocusToken: UUID?
 
-        init(text: Binding<String>) {
+        init(text: Binding<String>, onFocusChange: @escaping (Bool) -> Void) {
             _text = text
+            self.onFocusChange = onFocusChange
         }
 
-        func attach(textView: NSTextView) {
+        func attach(textView: TrackingTextView) {
             self.textView = textView
+            textView.onFocusChange = { [weak self] isFocused in
+                self?.onFocusChange(isFocused)
+            }
         }
 
         func render(text: String, moveCaretToEnd: Bool = false) {
@@ -122,6 +129,86 @@ struct MarkdownTextEditor: NSViewRepresentable {
             text = textView.string
             MarkdownStyler.apply(to: textView)
         }
+
+        func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            guard commandSelector == #selector(NSResponder.insertNewline(_:)) else {
+                return false
+            }
+
+            return continueMarkdownList(in: textView)
+        }
+
+        private func continueMarkdownList(in textView: NSTextView) -> Bool {
+            let selection = textView.selectedRange()
+            guard selection.length == 0 else { return false }
+
+            let nsString = textView.string as NSString
+            let location = min(selection.location, nsString.length)
+            let lineRange = nsString.lineRange(for: NSRange(location: location, length: 0))
+            let prefixRange = NSRange(location: lineRange.location, length: location - lineRange.location)
+            let linePrefix = nsString.substring(with: prefixRange)
+
+            guard let insertion = MarkdownContinuation.insertion(for: linePrefix) else {
+                return false
+            }
+
+            textView.insertText(insertion, replacementRange: selection)
+            return true
+        }
+    }
+}
+
+final class TrackingTextView: NSTextView {
+    var onFocusChange: ((Bool) -> Void)?
+
+    override func becomeFirstResponder() -> Bool {
+        let didBecomeFirstResponder = super.becomeFirstResponder()
+        if didBecomeFirstResponder {
+            onFocusChange?(true)
+        }
+        return didBecomeFirstResponder
+    }
+
+    override func resignFirstResponder() -> Bool {
+        let didResignFirstResponder = super.resignFirstResponder()
+        if didResignFirstResponder {
+            onFocusChange?(false)
+        }
+        return didResignFirstResponder
+    }
+}
+
+private enum MarkdownContinuation {
+    private static let bulletPattern = try! NSRegularExpression(pattern: #"^(\s*)([-*+])\s+(.+)$"#)
+    private static let numberedPattern = try! NSRegularExpression(pattern: #"^(\s*)(\d+)\.\s+(.+)$"#)
+    private static let quotePattern = try! NSRegularExpression(pattern: #"^(\s*)>\s+(.+)$"#)
+
+    static func insertion(for linePrefix: String) -> String? {
+        let trimmedLine = linePrefix.trimmingCharacters(in: .newlines)
+        let range = NSRange(location: 0, length: (trimmedLine as NSString).length)
+
+        if let match = bulletPattern.firstMatch(in: trimmedLine, range: range) {
+            let nsString = trimmedLine as NSString
+            let indent = nsString.substring(with: match.range(at: 1))
+            let marker = nsString.substring(with: match.range(at: 2))
+            return "\n\(indent)\(marker) "
+        }
+
+        if let match = numberedPattern.firstMatch(in: trimmedLine, range: range) {
+            let nsString = trimmedLine as NSString
+            let indent = nsString.substring(with: match.range(at: 1))
+            let numberString = nsString.substring(with: match.range(at: 2))
+            let nextNumber = (Int(numberString) ?? 0) + 1
+            return "\n\(indent)\(nextNumber). "
+        }
+
+        if let match = quotePattern.firstMatch(in: trimmedLine, range: range) {
+            let nsString = trimmedLine as NSString
+            let indent = nsString.substring(with: match.range(at: 1))
+            return "\n\(indent)> "
+        }
+
+        return nil
     }
 }
 

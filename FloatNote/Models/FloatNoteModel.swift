@@ -128,6 +128,7 @@ final class FloatNoteModel: ObservableObject {
     @Published var preferences: Preferences
     @Published var saveState: SaveState = .saved
     @Published var isLeftBoundaryPulsing = false
+    @Published var isEditorFocused = false
     @Published var focusNonce = UUID()
 
     private let persistence = StatePersistence()
@@ -321,6 +322,11 @@ final class FloatNoteModel: ObservableObject {
 
     func requestEditorFocus() {
         focusNonce = UUID()
+    }
+
+    func setEditorFocused(_ isFocused: Bool) {
+        guard isEditorFocused != isFocused else { return }
+        isEditorFocused = isFocused
     }
 
     func persistImmediately() {

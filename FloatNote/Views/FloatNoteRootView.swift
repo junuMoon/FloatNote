@@ -106,7 +106,7 @@ struct FloatNoteRootView: View {
         ZStack(alignment: .topLeading) {
             HStack(alignment: .top, spacing: 0) {
                 ZStack(alignment: .topLeading) {
-                    if let note = model.currentNote, note.body.isEmpty {
+                    if let note = model.currentNote, note.body.isEmpty, !model.isEditorFocused {
                         Text("제목 없이 바로 입력 시작")
                             .font(.system(size: 18, weight: .regular))
                             .foregroundStyle(Color.floatMuted.opacity(0.78))
@@ -119,7 +119,10 @@ struct FloatNoteRootView: View {
                             get: { model.currentNote?.body ?? "" },
                             set: { model.updateCurrentBody($0) }
                         ),
-                        focusToken: model.focusNonce
+                        focusToken: model.focusNonce,
+                        onFocusChange: { isFocused in
+                            model.setEditorFocused(isFocused)
+                        }
                     )
                 }
                 .frame(maxWidth: 620, maxHeight: .infinity, alignment: .topLeading)
