@@ -7,18 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		012DC7C280383C723B529598 /* MarkdownStylerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A71643800487005531C963 /* MarkdownStylerTests.swift */; };
 		092CFD29BC922A1702D7B44B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 255D9C28BE9AF65B73FF4092 /* Assets.xcassets */; };
 		308780E3D2B7A997B67D6468 /* MarkdownTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9CB050724AA079990DAC508 /* MarkdownTextEditor.swift */; };
 		4F5E19AB9360B3BCCEDA5672 /* StatePersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6DABF3F85E62FA86D96DD1 /* StatePersistence.swift */; };
+		583CDAFAB8AED61BB4204BCA /* MarkdownRendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5912F7E083FB176F1F6D36E /* MarkdownRendering.swift */; };
 		682A6EF04D3B028E0E565232 /* KeyShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB7D1470989B4580D8C9101 /* KeyShortcut.swift */; };
 		9B2662137D180322443988B3 /* FloatNoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B94A3400405C77248171AAD /* FloatNoteApp.swift */; };
 		9E43943CFAEA99BF4936974B /* FloatNoteController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D15712CC2D5AB6BAEB045F /* FloatNoteController.swift */; };
 		B2ADA78B0BB0DBEE1EA8D523 /* FloatNoteRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DB285A91FB01578CACCC278 /* FloatNoteRootView.swift */; };
 		B93990DC1FABEEC9AFDF2C35 /* HotKeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD57518FE685E9B51DB679A1 /* HotKeyMonitor.swift */; };
+		E778B7442A7F1C85E037255F /* MarkdownContinuationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94CA531A8C708E53DF2704 /* MarkdownContinuationTests.swift */; };
 		F76EB48EDA7FDD15F6580D9D /* FloatNoteModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3A9F9513672740D269E45B6 /* FloatNoteModel.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		589ABE7B8E5621B5A0755862 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E5509617C6E4D80581CA74B0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DD5D7A64A287AA09408DD101;
+			remoteInfo = FloatNote;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		07A71643800487005531C963 /* MarkdownStylerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownStylerTests.swift; sourceTree = "<group>"; };
 		255D9C28BE9AF65B73FF4092 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2DB285A91FB01578CACCC278 /* FloatNoteRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatNoteRootView.swift; sourceTree = "<group>"; };
 		3B94A3400405C77248171AAD /* FloatNoteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatNoteApp.swift; sourceTree = "<group>"; };
@@ -26,6 +40,9 @@
 		4BB7D1470989B4580D8C9101 /* KeyShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyShortcut.swift; sourceTree = "<group>"; };
 		53D15712CC2D5AB6BAEB045F /* FloatNoteController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatNoteController.swift; sourceTree = "<group>"; };
 		5939312482C75DB371BE98A5 /* FloatNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FloatNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		776EFAD4CF48643A80F873E7 /* FloatNoteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FloatNoteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B94CA531A8C708E53DF2704 /* MarkdownContinuationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownContinuationTests.swift; sourceTree = "<group>"; };
+		A5912F7E083FB176F1F6D36E /* MarkdownRendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownRendering.swift; sourceTree = "<group>"; };
 		C3A9F9513672740D269E45B6 /* FloatNoteModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatNoteModel.swift; sourceTree = "<group>"; };
 		C9CB050724AA079990DAC508 /* MarkdownTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTextEditor.swift; sourceTree = "<group>"; };
 		D50D005DD9200333C83A33E8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -33,10 +50,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		1A12CF8C05FAFDB18ECA96FF /* FloatNoteTests */ = {
+			isa = PBXGroup;
+			children = (
+				7B94CA531A8C708E53DF2704 /* MarkdownContinuationTests.swift */,
+				07A71643800487005531C963 /* MarkdownStylerTests.swift */,
+			);
+			path = FloatNoteTests;
+			sourceTree = "<group>";
+		};
 		1D97F499082C31CA80AF8992 /* Infrastructure */ = {
 			isa = PBXGroup;
 			children = (
 				FD57518FE685E9B51DB679A1 /* HotKeyMonitor.swift */,
+				A5912F7E083FB176F1F6D36E /* MarkdownRendering.swift */,
 				4B6DABF3F85E62FA86D96DD1 /* StatePersistence.swift */,
 			);
 			path = Infrastructure;
@@ -60,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				3DF3E0770DF9BC04C34E4F59 /* FloatNote */,
+				1A12CF8C05FAFDB18ECA96FF /* FloatNoteTests */,
 				70F74116866A7E453B2AB5BC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -68,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				5939312482C75DB371BE98A5 /* FloatNote.app */,
+				776EFAD4CF48643A80F873E7 /* FloatNoteTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -101,6 +130,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5BA5DA0598EFF5484F1DC232 /* FloatNoteTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B2B24C5CD2C9B2B6BD65423 /* Build configuration list for PBXNativeTarget "FloatNoteTests" */;
+			buildPhases = (
+				E2C0C547D04DB87ADBF03E7E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				47F52D3E565BC535F49198A6 /* PBXTargetDependency */,
+			);
+			name = FloatNoteTests;
+			packageProductDependencies = (
+			);
+			productName = FloatNoteTests;
+			productReference = 776EFAD4CF48643A80F873E7 /* FloatNoteTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		DD5D7A64A287AA09408DD101 /* FloatNote */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 980340A126CCFECDA5DFD003 /* Build configuration list for PBXNativeTarget "FloatNote" */;
@@ -144,6 +191,7 @@
 			projectRoot = "";
 			targets = (
 				DD5D7A64A287AA09408DD101 /* FloatNote */,
+				5BA5DA0598EFF5484F1DC232 /* FloatNoteTests */,
 			);
 		};
 /* End PBXProject section */
@@ -192,12 +240,30 @@
 				B2ADA78B0BB0DBEE1EA8D523 /* FloatNoteRootView.swift in Sources */,
 				B93990DC1FABEEC9AFDF2C35 /* HotKeyMonitor.swift in Sources */,
 				682A6EF04D3B028E0E565232 /* KeyShortcut.swift in Sources */,
+				583CDAFAB8AED61BB4204BCA /* MarkdownRendering.swift in Sources */,
 				308780E3D2B7A997B67D6468 /* MarkdownTextEditor.swift in Sources */,
 				4F5E19AB9360B3BCCEDA5672 /* StatePersistence.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E2C0C547D04DB87ADBF03E7E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E778B7442A7F1C85E037255F /* MarkdownContinuationTests.swift in Sources */,
+				012DC7C280383C723B529598 /* MarkdownStylerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		47F52D3E565BC535F49198A6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DD5D7A64A287AA09408DD101 /* FloatNote */;
+			targetProxy = 589ABE7B8E5621B5A0755862 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		12AD9D5EE28859D8014E13B8 /* Release */ = {
@@ -243,6 +309,25 @@
 				PRODUCT_NAME = FloatNote;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		BAAD280A210DB5E491A6F4D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fran.FloatNoteTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FloatNote.app/Contents/MacOS/FloatNote";
 			};
 			name = Debug;
 		};
@@ -365,9 +450,37 @@
 			};
 			name = Debug;
 		};
+		FF0F3AF3F9D533D6693EC323 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fran.FloatNoteTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FloatNote.app/Contents/MacOS/FloatNote";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0B2B24C5CD2C9B2B6BD65423 /* Build configuration list for PBXNativeTarget "FloatNoteTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BAAD280A210DB5E491A6F4D8 /* Debug */,
+				FF0F3AF3F9D533D6693EC323 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		62EC4EA8A186ED4710361745 /* Build configuration list for PBXProject "FloatNote" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -27,3 +27,14 @@ targets:
         PRODUCT_NAME: FloatNote
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
+  FloatNoteTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [FloatNoteTests]
+    dependencies:
+      - target: FloatNote
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        SWIFT_VERSION: "6.0"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
