@@ -22,6 +22,7 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
     private let window: NSWindow
     private var localMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
+    private var appFocusRestorer = AppFocusRestorer()
 
     override init() {
         let initialSize = Preferences().windowSize.size
@@ -41,6 +42,8 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
     }
 
     func showWindow() {
+        rememberInterruptedApplication()
+
         let size = model.preferences.windowSize.size
         let screen = activeScreen()
         let visibleFrame = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: size.width, height: size.height)
@@ -61,6 +64,7 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
     private func hideWindow() {
         model.persistImmediately()
         window.orderOut(nil)
+        restoreInterruptedApplicationFocus()
     }
 
     private func toggleWindow() {
@@ -142,6 +146,11 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
         }
     }
 
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        hideWindow()
+        return false
+    }
+
     func windowDidResize(_ notification: Notification) {
         scheduleWindowChromeLayout()
     }
@@ -169,5 +178,41 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
             button.setFrameOrigin(NSPoint(x: x, y: y))
             x += button.frame.width + FloatNoteChromeMetrics.trafficLightSpacing
         }
+    }
+
+    private func rememberInterruptedApplication() {
+        appFocusRestorer.remember(
+            frontmostAppPID: NSWorkspace.shared.frontmostApplication?.processIdentifier,
+            currentAppPID: NSRunningApplication.current.processIdentifier
+        )
+    }
+
+    private func restoreInterruptedApplicationFocus() {
+        guard let targetPID = appFocusRestorer.consumeTargetPID(currentAppPID: NSRunningApplication.current.processIdentifier),
+              let application = NSRunningApplication(processIdentifier: targetPID),
+              !application.isTerminated else {
+            return
+        }
+
+        application.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+    }
+}
+
+struct AppFocusRestorer {
+    private var previousAppPID: pid_t?
+
+    mutating func remember(frontmostAppPID: pid_t?, currentAppPID: pid_t) {
+        guard let frontmostAppPID, frontmostAppPID != currentAppPID else { return }
+        previousAppPID = frontmostAppPID
+    }
+
+    mutating func consumeTargetPID(currentAppPID: pid_t) -> pid_t? {
+        defer { previousAppPID = nil }
+
+        guard let previousAppPID, previousAppPID != currentAppPID else {
+            return nil
+        }
+
+        return previousAppPID
     }
 }

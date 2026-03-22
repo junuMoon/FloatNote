@@ -88,3 +88,39 @@ private final class Box<Value> {
         self.value = value
     }
 }
+
+final class AppFocusRestorerTests: XCTestCase {
+    func testRememberStoresFrontmostAppWhenDifferentFromCurrent() {
+        var restorer = AppFocusRestorer()
+
+        restorer.remember(frontmostAppPID: 41, currentAppPID: 99)
+
+        XCTAssertEqual(restorer.consumeTargetPID(currentAppPID: 99), 41)
+    }
+
+    func testRememberIgnoresCurrentApplication() {
+        var restorer = AppFocusRestorer()
+
+        restorer.remember(frontmostAppPID: 99, currentAppPID: 99)
+
+        XCTAssertNil(restorer.consumeTargetPID(currentAppPID: 99))
+    }
+
+    func testConsumeClearsStoredTargetAfterUse() {
+        var restorer = AppFocusRestorer()
+
+        restorer.remember(frontmostAppPID: 41, currentAppPID: 99)
+
+        XCTAssertEqual(restorer.consumeTargetPID(currentAppPID: 99), 41)
+        XCTAssertNil(restorer.consumeTargetPID(currentAppPID: 99))
+    }
+
+    func testRememberReplacesPreviousTargetOnNextCapture() {
+        var restorer = AppFocusRestorer()
+
+        restorer.remember(frontmostAppPID: 41, currentAppPID: 99)
+        restorer.remember(frontmostAppPID: 52, currentAppPID: 99)
+
+        XCTAssertEqual(restorer.consumeTargetPID(currentAppPID: 99), 52)
+    }
+}
