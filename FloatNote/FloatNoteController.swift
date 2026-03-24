@@ -1,4 +1,5 @@
 import AppKit
+import ApplicationServices
 import Combine
 import SwiftUI
 
@@ -90,7 +91,7 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
         window.level = .floating
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        window.collectionBehavior = [.fullScreenAuxiliary, .moveToActiveSpace]
         window.backgroundColor = .clear
         window.isOpaque = false
         window.hasShadow = true
@@ -132,8 +133,13 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
     }
 
     private func activeScreen() -> NSScreen? {
-        let mouseLocation = NSEvent.mouseLocation
-        return NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) }) ?? window.screen ?? NSScreen.main ?? NSScreen.screens.first
+        ScreenTargetResolver.resolve(
+            focusedContextScreen: focusedApplicationScreen(),
+            mainScreen: NSScreen.main,
+            mouseScreen: mouseScreen(),
+            windowScreen: window.isVisible ? window.screen : nil,
+            allScreens: NSScreen.screens
+        )
     }
 
     private func installLocalMonitor() {
@@ -194,7 +200,49 @@ final class FloatNoteController: NSObject, NSWindowDelegate {
             return
         }
 
-        application.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+        application.activate(options: [.activateAllWindows])
+    }
+
+    private func focusedApplicationScreen() -> NSScreen? {
+        guard let processIdentifier = NSWorkspace.shared.frontmostApplication?.processIdentifier,
+              let frontmostWindowFrame = frontmostWindowFrame(for: processIdentifier) else {
+            return nil
+        }
+
+        let center = CGPoint(x: frontmostWindowFrame.midX, y: frontmostWindowFrame.midY)
+        return screen(containingQuartzPoint: center)
+    }
+
+    private func mouseScreen() -> NSScreen? {
+        let mouseLocation = NSEvent.mouseLocation
+        return NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) })
+    }
+
+    private func frontmostWindowFrame(for processIdentifier: pid_t) -> CGRect? {
+        guard let windowInfoList = CGWindowListCopyWindowInfo(
+            [.optionOnScreenOnly, .excludeDesktopElements],
+            kCGNullWindowID
+        ) as? [[String: Any]] else {
+            return nil
+        }
+
+        return FrontmostWindowResolver.frame(for: processIdentifier, in: windowInfoList)
+    }
+
+    private func screen(containingQuartzPoint point: CGPoint) -> NSScreen? {
+        guard let displayID = DisplayScreenMatcher.displayID(containing: point) else {
+            return nil
+        }
+
+        let screensByDisplayID: [(CGDirectDisplayID, NSScreen)] = NSScreen.screens.compactMap { screen in
+            guard let screenNumber = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else {
+                return nil
+            }
+
+            return (screenNumber.uint32Value, screen)
+        }
+
+        return DisplayScreenMatcher.match(displayID: displayID, screens: screensByDisplayID)
     }
 }
 
@@ -214,5 +262,85 @@ struct AppFocusRestorer {
         }
 
         return previousAppPID
+    }
+}
+
+struct ScreenTargetResolver {
+    static func resolve<Screen>(
+        focusedContextScreen: Screen?,
+        mainScreen: Screen?,
+        mouseScreen: Screen?,
+        windowScreen: Screen?,
+        allScreens: [Screen]
+    ) -> Screen? {
+        focusedContextScreen ?? mainScreen ?? mouseScreen ?? windowScreen ?? allScreens.first
+    }
+}
+
+struct FrontmostWindowResolver {
+    static func frame(for processIdentifier: pid_t, in windowInfoList: [[String: Any]]) -> CGRect? {
+        for windowInfo in windowInfoList {
+            guard matches(processIdentifier: processIdentifier, windowInfo: windowInfo),
+                  let bounds = bounds(from: windowInfo) else {
+                continue
+            }
+
+            return bounds
+        }
+
+        return nil
+    }
+
+    private static func matches(processIdentifier: pid_t, windowInfo: [String: Any]) -> Bool {
+        guard let ownerPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
+              ownerPID == Int(processIdentifier),
+              let layer = windowInfo[kCGWindowLayer as String] as? Int,
+              layer == 0 else {
+            return false
+        }
+
+        if let isOnscreen = windowInfo[kCGWindowIsOnscreen as String] as? Bool, !isOnscreen {
+            return false
+        }
+
+        if let alpha = windowInfo[kCGWindowAlpha as String] as? Double, alpha <= 0 {
+            return false
+        }
+
+        return true
+    }
+
+    private static func bounds(from windowInfo: [String: Any]) -> CGRect? {
+        guard let rawBounds = windowInfo[kCGWindowBounds as String] else {
+            return nil
+        }
+
+        let boundsReference = rawBounds as CFTypeRef
+        guard CFGetTypeID(boundsReference) == CFDictionaryGetTypeID(),
+              let bounds = CGRect(dictionaryRepresentation: boundsReference as! CFDictionary),
+              bounds.width > 0,
+              bounds.height > 0 else {
+            return nil
+        }
+
+        return bounds
+    }
+}
+
+struct DisplayScreenMatcher {
+    static func displayID(containing point: CGPoint) -> CGDirectDisplayID? {
+        var displayID = CGDirectDisplayID()
+        var displayCount: UInt32 = 0
+        let status = CGGetDisplaysWithPoint(point, 1, &displayID, &displayCount)
+
+        guard status == .success, displayCount > 0 else {
+            return nil
+        }
+
+        return displayID
+    }
+
+    static func match<Screen>(displayID: CGDirectDisplayID, screens: [(CGDirectDisplayID, Screen)]) -> Screen? {
+        screens.first(where: { $0.0 == displayID })?.1
     }
 }

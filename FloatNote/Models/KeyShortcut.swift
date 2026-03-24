@@ -48,9 +48,14 @@ struct KeyShortcut: Codable, Equatable {
     var keyCode: UInt16
     var modifiers: ShortcutModifiers
 
-    static let defaultToggle = KeyShortcut(
+    static let legacyDefaultToggle = KeyShortcut(
         keyCode: UInt16(kVK_ANSI_A),
         modifiers: [.control]
+    )
+
+    static let defaultToggle = KeyShortcut(
+        keyCode: UInt16(kVK_ANSI_A),
+        modifiers: [.option]
     )
 
     static let defaultPrevious = KeyShortcut(

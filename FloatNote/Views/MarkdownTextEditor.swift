@@ -70,6 +70,8 @@ struct MarkdownTextEditor: NSViewRepresentable {
 
     @MainActor
     final class Coordinator: NSObject, NSTextViewDelegate {
+        private static let indentationUnit = "  "
+
         @Binding private var text: String
         var fontSize: CGFloat
         private weak var textView: NSTextView?
@@ -139,11 +141,16 @@ struct MarkdownTextEditor: NSViewRepresentable {
         }
 
         func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-            guard commandSelector == #selector(NSResponder.insertNewline(_:)) else {
+            switch commandSelector {
+            case #selector(NSResponder.insertNewline(_:)):
+                return continueMarkdownList(in: textView)
+            case #selector(NSResponder.insertTab(_:)):
+                return changeIndentation(in: textView, direction: .indent)
+            case #selector(NSResponder.insertBacktab(_:)):
+                return changeIndentation(in: textView, direction: .outdent)
+            default:
                 return false
             }
-
-            return continueMarkdownList(in: textView)
         }
 
         private func continueMarkdownList(in textView: NSTextView) -> Bool {
@@ -184,6 +191,112 @@ struct MarkdownTextEditor: NSViewRepresentable {
             }
 
             return NSRange(location: lineRange.location, length: length)
+        }
+
+        private func changeIndentation(in textView: NSTextView, direction: IndentationDirection) -> Bool {
+            let selection = textView.selectedRange()
+            let nsString = textView.string as NSString
+
+            if nsString.length == 0 {
+                guard direction == .indent else { return true }
+                textView.insertText(Self.indentationUnit, replacementRange: selection)
+                return true
+            }
+
+            let affectedRange = nsString.lineRange(for: selection)
+            let lineSegments = lineSegments(in: nsString, within: affectedRange)
+            guard !lineSegments.isEmpty else { return false }
+
+            let relativeSelectionStart = selection.location - affectedRange.location
+            let relativeSelectionEnd = NSMaxRange(selection) - affectedRange.location
+            let isCaretSelection = selection.length == 0
+
+            var startDelta = 0
+            var endDelta = 0
+            var transformedBlock = ""
+
+            for lineSegment in lineSegments {
+                let lineOffset = lineSegment.contentRange.location - affectedRange.location
+                let transform = indentationTransform(for: lineSegment.content, direction: direction)
+
+                transformedBlock += transform.content
+                transformedBlock += lineSegment.lineEnding
+
+                if lineOffset < relativeSelectionStart || (isCaretSelection && lineOffset == relativeSelectionStart) {
+                    startDelta += transform.delta
+                }
+
+                if lineOffset < relativeSelectionEnd || (isCaretSelection && lineOffset == relativeSelectionEnd) {
+                    endDelta += transform.delta
+                }
+            }
+
+            textView.insertText(transformedBlock, replacementRange: affectedRange)
+
+            let newLocation = max(0, selection.location + startDelta)
+            let newLength = max(0, selection.length + endDelta - startDelta)
+            textView.setSelectedRange(NSRange(location: newLocation, length: newLength))
+            return true
+        }
+
+        private func lineSegments(in nsString: NSString, within range: NSRange) -> [LineSegment] {
+            var segments: [LineSegment] = []
+
+            nsString.enumerateSubstrings(in: range, options: [.byLines, .substringNotRequired]) { _, contentRange, enclosingRange, _ in
+                let lineEndingRange = NSRange(
+                    location: NSMaxRange(contentRange),
+                    length: NSMaxRange(enclosingRange) - NSMaxRange(contentRange)
+                )
+
+                segments.append(
+                    LineSegment(
+                        contentRange: contentRange,
+                        content: nsString.substring(with: contentRange),
+                        lineEnding: lineEndingRange.length > 0 ? nsString.substring(with: lineEndingRange) : ""
+                    )
+                )
+            }
+
+            if segments.isEmpty, range.location == 0, range.length == 0 {
+                segments.append(LineSegment(contentRange: range, content: "", lineEnding: ""))
+            }
+
+            return segments
+        }
+
+        private func indentationTransform(
+            for line: String,
+            direction: IndentationDirection
+        ) -> (content: String, delta: Int) {
+            switch direction {
+            case .indent:
+                return (Self.indentationUnit + line, Self.indentationUnit.count)
+            case .outdent:
+                if line.hasPrefix(Self.indentationUnit) {
+                    return (String(line.dropFirst(Self.indentationUnit.count)), -Self.indentationUnit.count)
+                }
+
+                if line.hasPrefix("\t") {
+                    return (String(line.dropFirst()), -1)
+                }
+
+                if line.hasPrefix(" ") {
+                    return (String(line.dropFirst()), -1)
+                }
+
+                return (line, 0)
+            }
+        }
+
+        private struct LineSegment {
+            let contentRange: NSRange
+            let content: String
+            let lineEnding: String
+        }
+
+        private enum IndentationDirection {
+            case indent
+            case outdent
         }
     }
 }

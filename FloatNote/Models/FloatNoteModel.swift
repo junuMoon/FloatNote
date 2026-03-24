@@ -124,7 +124,9 @@ struct Preferences: Codable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        toggleShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .toggleShortcut) ?? .defaultToggle
+        toggleShortcut = Preferences.migratedToggleShortcut(
+            try container.decodeIfPresent(KeyShortcut.self, forKey: .toggleShortcut)
+        )
         previousShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .previousShortcut) ?? .defaultPrevious
         nextShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .nextShortcut) ?? .defaultNext
         windowSize = try container.decodeIfPresent(WindowSizePreset.self, forKey: .windowSize) ?? .medium
@@ -138,6 +140,17 @@ struct Preferences: Codable, Equatable {
         try container.encode(nextShortcut, forKey: .nextShortcut)
         try container.encode(windowSize, forKey: .windowSize)
         try container.encode(editorFontSize, forKey: .editorFontSize)
+    }
+
+    func normalized() -> Preferences {
+        var normalized = self
+        normalized.toggleShortcut = Preferences.migratedToggleShortcut(toggleShortcut)
+        return normalized
+    }
+
+    private static func migratedToggleShortcut(_ shortcut: KeyShortcut?) -> KeyShortcut {
+        let resolvedShortcut = shortcut ?? .defaultToggle
+        return resolvedShortcut == .legacyDefaultToggle ? .defaultToggle : resolvedShortcut
     }
 }
 
@@ -183,12 +196,24 @@ final class FloatNoteModel: ObservableObject {
             let resolvedCurrentID = resolvedNotes.contains(where: { $0.id == snapshot.currentNoteID })
                 ? snapshot.currentNoteID
                 : resolvedNotes.last!.id
+            let normalizedPreferences = snapshot.preferences.normalized()
 
             notes = resolvedNotes
             currentNoteID = resolvedCurrentID
             hasSeenOnboarding = snapshot.hasSeenOnboarding
             isOnboardingPresented = !snapshot.hasSeenOnboarding
-            preferences = snapshot.preferences
+            preferences = normalizedPreferences
+
+            if normalizedPreferences != snapshot.preferences {
+                persistence.save(
+                    PersistedSnapshot(
+                        notes: resolvedNotes,
+                        currentNoteID: resolvedCurrentID,
+                        hasSeenOnboarding: snapshot.hasSeenOnboarding,
+                        preferences: normalizedPreferences
+                    )
+                )
+            }
         } else {
             let seed = NoteRecord.seedNotes()
             notes = seed
